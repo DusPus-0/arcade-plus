@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Pulse — Cyber-Neon Web Arcade & Monthly ₹500 Prize Pool</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- QRCode Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #07090f;
+            color: #f1f5f9;
+            overflow-x: hidden;
+        }
+        .bg-arcade-grid {
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.14) 0%, transparent 55%),
+                radial-gradient(circle at 85% 20%, rgba(168, 85, 247, 0.12) 0%, transparent 50%),
+                linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+        }
+        .glass-panel {
+            background: rgba(15, 20, 32, 0.85);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .game-card {
+            transition: transform 0.25s cubic-bezier(0.2, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .game-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(6, 182, 212, 0.55);
+            box-shadow: 0 16px 32px -10px rgba(6, 182, 212, 0.3);
+        }
+        .glow-btn {
+            box-shadow: 0 0 22px rgba(6, 182, 212, 0.35);
+            transition: all 0.2s ease;
+        }
+        .glow-btn:hover {
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+            transform: translateY(-1px);
+        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #07090f; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
+    </style>
+</head>
+<body class="bg-arcade-grid min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-slate-950">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ==================== HEADER ==================== -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between gap-4">
+            
+            <!-- Logo Brand -->
+            <div class="flex items-center gap-3 cursor-pointer" onclick="resetFilters()">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-purple-600 to-emerald-400 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                    <i class="fa-solid fa-bolt text-white text-lg"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-display font-bold text-lg sm:text-xl tracking-tight text-white">Arcade Pulse</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">v3.1</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">5-Min Active Play Verification • ₹500 Monthly Pool</p>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="hidden md:flex flex-1 max-w-md mx-4">
+                <div class="relative w-full">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        oninput="handleSearch(this.value)"
+                        placeholder="Search games, creators, genres..." 
+                        class="w-full bg-[#090c14] border border-white/10 focus:border-cyan-500 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none transition"
+                    >
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button 
+                    onclick="openAuditModal()" 
+                    class="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-xs sm:text-sm font-medium flex items-center gap-2 transition cursor-pointer"
+                >
+                    <i class="fa-solid fa-clock-rotate-left text-emerald-400"></i>
+                    <span class="hidden sm:inline">Audit Log</span>
+                    <span id="auditCountBadge" class="px-1.5 py-0.5 text-[11px] font-bold rounded-full bg-emerald-500/20 text-emerald-300">0</span>
+                </button>
+
+                <button 
+                    onclick="openPublishModal()" 
+                    class="glow-btn px-4 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 via-purple-600 to-fuchsia-600 text-white text-xs sm:text-sm font-semibold flex items-center gap-2 cursor-pointer"
+                >
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Submit Game</span>
+                    <span class="px-1.5 py-0.5 rounded bg-black/40 text-emerald-300 font-bold text-xs border border-emerald-400/30">₹50</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Search -->
+        <div class="md:hidden px-4 pb-3">
+            <div class="relative w-full">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input 
+                    type="text" 
+                    id="mobileSearchInput" 
+                    oninput="handleSearch(this.value)"
+                    placeholder="Search arcade games..." 
+                    class="w-full bg-[#090c14] border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none"
+                >
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8">
+
+        <!-- HERO & MONTHLY ₹500 PRIZE POOL BANNER -->
+        <section class="relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#121726] via-[#0d121f] to-[#090d16] p-6 sm:p-10 shadow-2xl">
+            <div class="absolute -top-24 -right-24 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -left-24 w-72 h-72 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 text-xs font-semibold">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        5-Minute Active Playtime Verification • Anti-Cheat Enabled
+                    </div>
+
+                    <h1 class="font-display text-3xl sm:text-5xl font-bold text-white leading-tight">
+                        Play & Compete for the <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-emerald-400">
+                            ₹500 Monthly Prize Pool.
+                        </span>
+                    </h1>
+
+                    <p class="text-slate-300 text-sm sm:text-base max-w-xl leading-relaxed">
+                        Every <strong class="text-cyan-300">5 full minutes (05:00)</strong> of active gameplay counts as <strong class="text-emerald-400">+1 Verified Play</strong>. Idle tabs pause automatically. Creators can publish their HTML5 games for just <strong class="text-white">₹50 via UPI</strong>!
+                    </p>
+
+                    <div class="flex flex-wrap items-center gap-3 pt-2">
+                        <button 
+                            onclick="launchFeaturedGame()" 
+                            class="px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition cursor-pointer"
+                        >
+                            <i class="fa-solid fa-play"></i> Start 5-Min Play Session
+                        </button>
+                        <button 
+                            onclick="openPublishModal()" 
+                            class="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/15 font-semibold text-sm flex items-center gap-2 transition cursor-pointer"
+                        >
+                            <i class="fa-solid fa-trophy text-amber-400"></i> Enter Creator Contest (₹50)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Monthly Prize Pool & Profit Protection Card -->
+                <div class="lg:col-span-5">
+                    <div class="glass-panel rounded-2xl p-5 border border-purple-500/30 relative overflow-hidden bg-gradient-to-b from-purple-500/10 to-transparent space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-trophy"></i> Monthly Prize Pool
+                            </span>
+                            <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                ₹500 Cash Reward
+                            </span>
+                        </div>
+
+                        <!-- Profit Protection Progress Bar -->
+                        <div class="p-3.5 rounded-xl bg-[#090c14] border border-white/10 space-y-2">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-slate-300 font-medium">Pool Unlock Threshold:</span>
+                                <span class="font-mono font-bold text-cyan-300"><span id="submittedGamesProgressCount">12</span> / 15 Games</span>
+                            </div>
+                            <div class="w-full h-2.5 bg-white/10 rounded-full overflow-hidden">
+                                <div id="poolUnlockBar" class="h-full bg-gradient-to-r from-cyan-400 via-purple-500 to-emerald-400 rounded-full transition-all duration-500" style="width: 80%;"></div>
+                            </div>
+                            <p class="text-[11px] text-slate-400 leading-snug">
+                                <i class="fa-solid fa-shield-check text-emerald-400 mr-1"></i>
+                                Profit-Protected Pool: ₹500 payout unlocks once 15+ entries are submitted this month (3 entries remaining!).
+                            </p>
+                        </div>
+
+                        <div class="flex items-center justify-between text-xs pt-1 border-t border-white/10">
+                            <span class="text-slate-400">UPI: <code class="text-emerald-300 font-mono">kumarguptasunil01790@oksbi</code></span>
+                            <button onclick="openPublishModal()" class="text-cyan-300 hover:text-cyan-200 font-semibold flex items-center gap-1 cursor-pointer">
+                                <span>Submit Entry</span>
+                                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LIVE MONTHLY LEADERBOARD -->
+        <section class="glass-panel rounded-3xl p-5 sm:p-6 border border-white/10">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-display font-bold text-white text-base sm:text-lg">Monthly ₹500 Prize Leaderboard</h2>
+                        <p class="text-xs text-slate-400">Ranked strictly by completed <strong class="text-cyan-300">5-Minute Active Play</strong> sessions</p>
+                    </div>
+                </div>
+                <span class="text-xs font-mono px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-emerald-300 self-start sm:self-auto">
+                    1 Valid Play = 05:00 Active Gameplay
+                </span>
+            </div>
+
+            <div id="leaderboardContainer" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <!-- Dynamically populated top 3 -->
+            </div>
+        </section>
+
+        <!-- CATEGORIES & FILTER BAR -->
+        <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar" id="categoryPills">
+                <button onclick="setCategory('All')" data-cat="All" class="cat-pill active px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-cyan-500 text-slate-950 transition cursor-pointer shrink-0">
+                    All Games
+                </button>
+                <button onclick="setCategory('Runner')" data-cat="Runner" class="cat-pill px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition cursor-pointer shrink-0">
+                    <i class="fa-solid fa-person-running mr-1.5 text-cyan-400"></i>Neon Runner
+                </button>
+                <button onclick="setCategory('Arena')" data-cat="Arena" class="cat-pill px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition cursor-pointer shrink-0">
+                    <i class="fa-solid fa-table-tennis-paddle-ball mr-1.5 text-purple-400"></i>Cyber Pong
+                </button>
+                <button onclick="setCategory('Shooter')" data-cat="Shooter" class="cat-pill px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition cursor-pointer shrink-0">
+                    <i class="fa-solid fa-shuttle-space mr-1.5 text-emerald-400"></i>Space Defender
+                </button>
+                <button onclick="setCategory('Community')" data-cat="Community" class="cat-pill px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition cursor-pointer shrink-0">
+                    <i class="fa-solid fa-sparkles mr-1.5 text-amber-400"></i>Community Entries
+                </button>
+            </div>
+
+            <div class="text-xs text-slate-400 flex items-center gap-3 shrink-0">
+                <span><strong id="visibleGamesCount" class="text-white">3</strong> Playable Titles</span>
+                <span class="h-3 w-[1px] bg-white/15"></span>
+                <span class="text-cyan-400 font-medium"><i class="fa-regular fa-clock mr-1"></i>5-Min Play Rule</span>
+            </div>
+        </section>
+
+        <!-- GAMES GRID -->
+        <section>
+            <div id="gamesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- Empty Search State -->
+            <div id="emptyState" class="hidden glass-panel rounded-2xl p-12 text-center space-y-3">
+                <div class="w-14 h-14 rounded-2xl bg-white/5 mx-auto flex items-center justify-center text-slate-400 text-2xl">
+                    <i class="fa-solid fa-ghost"></i>
+                </div>
+                <h3 class="font-display text-lg font-bold text-white">No games matched your filter</h3>
+                <p class="text-sm text-slate-400 max-w-md mx-auto">Reset filters or publish your own HTML5 game for ₹50 via UPI!</p>
+                <button onclick="resetFilters()" class="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-bold cursor-pointer">Reset Filters</button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="border-t border-white/10 bg-[#05070c] py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-cyan-400"></i>
+                <span class="font-display font-bold text-slate-300">Arcade Pulse</span>
+                <span>• 5-Minute Active Play Verification</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <span>UPI: <span class="text-emerald-400 font-mono">kumarguptasunil01790@oksbi</span> (DusPus)</span>
+                <span>•</span>
+                <span>Monthly Prize Pool: ₹500</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL 1: GAME PLAYER MODAL WITH 5-MINUTE ACTIVE TIMER                 -->
+    <!-- ===================================================================== -->
+    <div id="playerModal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-5">
+        <div class="glass-panel w-full max-w-4xl rounded-3xl border border-white/15 overflow-hidden flex flex-col max-h-[95vh] shadow-2xl">
+            
+            <!-- Top Bar -->
+            <div class="px-4 sm:px-6 py-3 bg-[#0c101b] border-b border-white/10 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span id="playerGenreBadge" class="px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 text-xs font-bold shrink-0">Runner</span>
+                    <div class="truncate">
+                        <h3 id="playerGameTitle" class="font-display font-bold text-white text-base sm:text-lg truncate">Game Title</h3>
+                        <p id="playerCreatorName" class="text-xs text-slate-400 truncate">by @Creator</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0">
+                    <div class="px-3 py-1.5 rounded-xl bg-black/50 border border-white/10 text-xs sm:text-sm font-mono">
+                        <span class="text-slate-400">SCORE:</span>
+                        <span id="liveScoreDisplay" class="text-cyan-400 font-bold ml-1">0</span>
+                    </div>
+
+                    <button onclick="restartCurrentGame()" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 transition cursor-pointer" title="Restart Game Round">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+
+                    <button onclick="closePlayerModal()" class="p-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 transition cursor-pointer" title="Close">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PROMINENT 5-MINUTE ACTIVE PLAYTIME PROGRESS BAR -->
+            <div class="px-4 sm:px-6 py-2.5 bg-[#101626] border-b border-white/10 space-y-1.5">
+                <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div class="flex items-center gap-2">
+                        <span id="activeStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="font-semibold text-white">Active Playtime:</span>
+                        <span id="activeTimerText" class="font-mono font-bold text-cyan-300 text-sm">00:00 / 05:00</span>
+                        <span id="timerStateBadge" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase tracking-wider">ACTIVE</span>
+                    </div>
+                    <div class="text-slate-400 text-[11px]">
+                        Verified Plays for this game: <strong id="modalGameVerifiedPlays" class="text-emerald-400">0</strong>
+                    </div>
+                </div>
+                <div class="w-full h-2 bg-black/60 rounded-full overflow-hidden border border-white/5">
+                    <div id="activeTimerProgressBar" class="h-full bg-gradient-to-r from-cyan-400 via-purple-500 to-emerald-400 transition-all duration-300" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Canvas Viewport -->
+            <div id="gameViewportWrapper" class="relative w-full aspect-[16/10] sm:aspect-[16/9] bg-[#06080e] flex items-center justify-center overflow-hidden">
+                <canvas id="gameCanvas" class="w-full h-full block"></canvas>
+                <iframe id="customGameFrame" sandbox="allow-scripts" class="hidden w-full h-full border-0 bg-white"></iframe>
+
+                <!-- Round Over Overlay (Timer keeps progress so players can keep playing to hit 5 mins!) -->
+                <div id="gameOverlay" class="hidden absolute inset-0 bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-10">
+                    <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-bold mb-2">ROUND FINISHED</span>
+                    <h4 id="overlayTitle" class="font-display text-2xl sm:text-4xl font-bold text-white mb-1">Round Score: 0</h4>
+                    <p class="text-xs sm:text-sm text-slate-300 max-w-md mb-5">Your <strong class="text-cyan-300">5-Minute Play Timer</strong> is saved! Hit Play Again immediately to keep building toward +1 Valid Play.</p>
+                    <button onclick="restartCurrentGame()" class="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-play"></i> Continue Playing
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bottom Controls & Touch Pad -->
+            <div class="px-4 sm:px-6 py-3 bg-[#0c101b] border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+                <p id="playerControlsHint" class="text-xs text-slate-400 flex items-center gap-2">
+                    <i class="fa-solid fa-keyboard text-cyan-400"></i>
+                    <span>Move mouse, tap, or use Arrow Keys / Spacebar (Timer pauses if idle > 10s)</span>
+                </p>
+
+                <!-- Mobile Touch Buttons -->
+                <div class="flex items-center gap-2 sm:hidden">
+                    <button onpointerdown="triggerVirtualKey('ArrowLeft')" class="w-10 h-10 rounded-lg bg-white/10 active:bg-cyan-500 text-white flex items-center justify-center"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button onpointerdown="triggerVirtualKey('ArrowUp')" class="w-10 h-10 rounded-lg bg-white/10 active:bg-cyan-500 text-white flex items-center justify-center"><i class="fa-solid fa-arrow-up"></i></button>
+                    <button onpointerdown="triggerVirtualKey('Space')" class="w-10 h-10 rounded-lg bg-white/10 active:bg-cyan-500 text-white flex items-center justify-center"><i class="fa-solid fa-bolt"></i></button>
+                    <button onpointerdown="triggerVirtualKey('ArrowRight')" class="w-10 h-10 rounded-lg bg-white/10 active:bg-cyan-500 text-white flex items-center justify-center"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+
+                <div class="flex items-center gap-2 ml-auto">
+                    <button id="likeGameBtn" onclick="toggleLikeCurrentGame()" class="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-heart text-rose-400"></i>
+                        <span id="likeCountText">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL 2: SUBMIT GAME & ₹50 UPI PAYMENT (UTR HONOR SYSTEM)             -->
+    <!-- ===================================================================== -->
+    <div id="publishModal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+        <div class="glass-panel w-full max-w-2xl rounded-3xl border border-white/15 overflow-hidden shadow-2xl my-auto">
+            
+            <div class="px-6 py-4 bg-[#0c101b] border-b border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-display font-bold text-white text-base sm:text-lg">Submit Game to Arcade Pulse (₹50)</h3>
+                        <p class="text-[11px] text-slate-400">Compete for the ₹500 Monthly Prize Pool</p>
+                    </div>
+                </div>
+                <button onclick="closePublishModal()" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Steps Indicator -->
+            <div class="px-6 py-3 bg-[#101524] border-b border-white/5 flex items-center justify-between text-xs">
+                <div id="stepIndicator1" class="flex items-center gap-2 font-semibold text-cyan-400">
+                    <span class="w-5 h-5 rounded-full bg-cyan-500 text-slate-950 font-bold flex items-center justify-center text-[11px]">1</span>
+                    <span>Game Info</span>
+                </div>
+                <div class="h-[1px] flex-1 bg-white/10 mx-3"></div>
+                <div id="stepIndicator2" class="flex items-center gap-2 font-medium text-slate-500">
+                    <span class="w-5 h-5 rounded-full bg-white/10 text-slate-400 flex items-center justify-center text-[11px]">2</span>
+                    <span>₹50 UPI & UTR</span>
+                </div>
+                <div class="h-[1px] flex-1 bg-white/10 mx-3"></div>
+                <div id="stepIndicator3" class="flex items-center gap-2 font-medium text-slate-500">
+                    <span class="w-5 h-5 rounded-full bg-white/10 text-slate-400 flex items-center justify-center text-[11px]">3</span>
+                    <span>Live</span>
+                </div>
+            </div>
+
+            <!-- STEP 1: GAME DETAILS -->
+            <div id="publishStep1" class="p-6 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Game Title *</label>
+                        <input type="text" id="pubTitle" placeholder="e.g., Hyper Neon Dash" class="w-full bg-[#070a12] border border-white/10 focus:border-cyan-500 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Creator Handle *</label>
+                        <input type="text" id="pubCreator" placeholder="e.g., @DevRohan" class="w-full bg-[#070a12] border border-white/10 focus:border-cyan-500 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Category</label>
+                        <select id="pubGenre" class="w-full bg-[#070a12] border border-white/10 focus:border-cyan-500 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none">
+                            <option value="Runner">Runner</option>
+                            <option value="Arena">Arena</option>
+                            <option value="Shooter">Shooter</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Built-in Engine Mode (or Custom HTML below)</label>
+                        <select id="pubTemplate" class="w-full bg-[#070a12] border border-white/10 focus:border-cyan-500 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none">
+                            <option value="runner">Neon Runner (Endless)</option>
+                            <option value="pong">Cyber Pong Arena (Endless)</option>
+                            <option value="defender">Space Defender (Endless)</option>
+                            <option value="custom">Custom HTML5 Game Code</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Short Description</label>
+                    <input type="text" id="pubDesc" placeholder="Survive 5+ minutes in this high-speed cyber arcade!" class="w-full bg-[#070a12] border border-white/10 focus:border-cyan-500 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Optional Custom HTML5 Game Code / Embed Snippet</label>
+                    <textarea id="pubCustomHtml" rows="2" placeholder="Paste single-file HTML5 game code here if selecting Custom HTML5 mode..." class="w-full bg-[#070a12] border border-white/10 focus:border-cyan-500 rounded-xl px-3.5 py-2 text-xs font-mono text-slate-300 focus:outline-none"></textarea>
+                </div>
+
+                <div class="pt-2 flex items-center justify-end gap-3">
+                    <button onclick="closePublishModal()" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold cursor-pointer">Cancel</button>
+                    <button onclick="goToPaymentStep()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 text-white text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer">
+                        <span>Proceed to ₹50 UPI Payment</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 2: UPI PAYMENT & 12-DIGIT UTR HONOR SYSTEM -->
+            <div id="publishStep2" class="hidden p-6 space-y-5">
+                <div class="p-4 rounded-2xl bg-[#070a12] border border-white/10 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-400">Entry Submission:</p>
+                        <h4 id="checkoutGameName" class="font-display font-bold text-white text-base">Game Title</h4>
+                        <p class="text-[11px] text-emerald-400 mt-0.5"><i class="fa-solid fa-shield-halved mr-1"></i>5-Min Active Play Leaderboard Eligible</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 block">Entry Fee</span>
+                        <span class="font-display text-2xl font-bold text-emerald-400">₹50.00</span>
+                    </div>
+                </div>
+
+                <!-- UPI QR & Deep Link -->
+                <div class="p-4 rounded-2xl bg-[#070a12] border border-white/10 flex flex-col sm:flex-row items-center gap-5">
+                    <div class="bg-white p-3 rounded-xl shrink-0 flex items-center justify-center">
+                        <div id="qrcode" class="w-28 h-28 flex items-center justify-center"></div>
+                    </div>
+                    <div class="flex-1 w-full space-y-3">
+                        <div>
+                            <p class="text-xs text-slate-300 font-medium">Scan QR or pay ₹50 to UPI ID:</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <input id="upiIdField" type="text" readonly value="kumarguptasunil01790@oksbi" class="w-full bg-[#111625] border border-white/15 rounded-xl px-3 py-2 text-xs text-emerald-300 font-mono select-all">
+                                <button onclick="copyUpiId()" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs text-white font-semibold cursor-pointer shrink-0">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <a id="upiDeepLink" href="#" class="flex-1 py-2.5 px-3 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-500/30 text-xs font-bold text-center transition">
+                                <i class="fa-solid fa-mobile-screen-button mr-1.5"></i> Pay ₹50 via UPI App (GPay / PhonePe / Paytm)
+                            </a>
+                        </div>
+                        <p class="text-[11px] text-slate-400">Payee Name: <strong class="text-white">DusPus</strong> • Exact Amount: <strong class="text-emerald-400">₹50</strong></p>
+                    </div>
+                </div>
+
+                <!-- 12-Digit UTR Input -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-semibold text-slate-300">Enter 12-Digit UPI Transaction ID / UTR Number *</label>
+                    <input type="text" id="honorUtrInput" maxlength="12" placeholder="e.g., 432810938210" class="w-full bg-[#070a12] border border-white/10 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono tracking-wider focus:outline-none">
+                    <p class="text-[11px] text-slate-400">Complete your ₹50 transfer to <code class="text-emerald-300">kumarguptasunil01790@oksbi</code> (DusPus), then enter the 12-digit UTR number from your receipt to publish immediately.</p>
+                </div>
+
+                <div class="pt-2 flex items-center justify-between gap-3">
+                    <button onclick="backToStep1()" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold cursor-pointer">
+                        <i class="fa-solid fa-arrow-left mr-1"></i> Back
+                    </button>
+                    <button onclick="submitHonorListing()" class="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs sm:text-sm font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/25 cursor-pointer">
+                        <i class="fa-solid fa-check-circle"></i>
+                        <span>Submit UTR & Publish Game</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 3: SUCCESS -->
+            <div id="publishStep3" class="hidden p-8 text-center space-y-4">
+                <div class="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-3xl flex items-center justify-center mx-auto animate-bounce">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <h4 class="font-display text-2xl font-bold text-white">Game Published to Arcade Pulse!</h4>
+                <p class="text-sm text-slate-300 max-w-md mx-auto">
+                    <strong id="publishedSuccessTitle" class="text-cyan-300">Game</strong> is now live! Share it with players—every 5 minutes of active play earns +1 Valid Play toward the ₹500 prize.
+                </p>
+                <div class="inline-block px-4 py-2 rounded-xl bg-[#070a12] border border-white/10 text-xs font-mono text-slate-400">
+                    UTR: <span id="receiptUtrId" class="text-emerald-400">432810938210</span> • ₹50 Paid to DusPus
+                </div>
+                <div class="pt-3 flex flex-wrap items-center justify-center gap-3">
+                    <button id="playNewlyPublishedBtn" class="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-play"></i> Play My Game Now
+                    </button>
+                    <button onclick="closePublishModal()" class="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 font-semibold text-sm cursor-pointer">
+                        Back to Arcade
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL 3: VERIFIED 5-MIN PLAY AUDIT LOG & SUBMISSIONS                  -->
+    <!-- ===================================================================== -->
+    <div id="auditModal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6">
+        <div class="glass-panel w-full max-w-2xl rounded-3xl border border-white/15 overflow-hidden shadow-2xl">
+            <div class="px-6 py-4 bg-[#0c101b] border-b border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-clock-rotate-left text-emerald-400 text-lg"></i>
+                    <h3 class="font-display font-bold text-white text-lg">Verified 5-Minute Play & UTR Audit Log</h3>
+                </div>
+                <button onclick="closeAuditModal()" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5 max-h-[78vh] overflow-y-auto">
+                <div class="p-4 rounded-2xl bg-[#070a12] border border-white/10 space-y-1.5">
+                    <p class="text-xs text-cyan-300 font-semibold"><i class="fa-solid fa-shield-halved mr-1"></i> Anti-Farm & Velocity Audit Protection</p>
+                    <p class="text-xs text-slate-400">Plays are only recorded after <strong class="text-white">300 seconds (5 full minutes)</strong> of continuous active interaction. Idle sessions and background tabs are automatically paused and excluded.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Completed 5-Minute Play Sessions</h4>
+                    <div id="verifiedPlayLogList" class="space-y-2">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Submitted Games & UTR Receipts (₹50)</h4>
+                    <div id="studioSubmissionsList" class="space-y-2">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- JAVASCRIPT ENGINE, 5-MINUTE ACTIVE TIMER & ARCADE LOGIC               -->
+    <!-- ===================================================================== -->
+    <script>
+        // Minimum active playtime required to award +1 Valid Play (300 seconds = 5 minutes)
+        const REQUIRED_ACTIVE_SECONDS = 300;
+        const IDLE_TIMEOUT_MS = 10000; // Pause timer if no interaction for 10 seconds
+
+        const gamesCatalog = [
+            {
+                id: 'neon-runner',
+                title: 'Neon Runner: Overdrive',
+                creator: '@AaravCyber',
+                genre: 'Runner',
+                rating: '4.9',
+                verifiedPlays: 18,
+                likes: 94,
+                liked: false,
+                isCommunity: false,
+                template: 'runner',
+                description: 'Leap over laser barriers and collect energy orbs in an endless synthwave sprint.',
+                controls: 'Click, Tap, or Press Space / Up Arrow to jump',
+                accent: 'from-cyan-600 to-blue-700',
+                icon: 'fa-person-running'
+            },
+            {
+                id: 'cyber-pong',
+                title: 'Cyber Pong Arena',
+                creator: '@PriyaArcade',
+                genre: 'Arena',
+                rating: '4.8',
+                verifiedPlays: 15,
+                likes: 76,
+                liked: false,
+                isCommunity: false,
+                template: 'pong',
+                description: 'High-velocity neon rally duel against an adaptive AI core. Survive and rack up combos!',
+                controls: 'Move Mouse, Touch, or Up/Down Arrows to control paddle',
+                accent: 'from-purple-600 to-fuchsia-700',
+                icon: 'fa-table-tennis-paddle-ball'
+            },
+            {
+                id: 'space-defender',
+                title: 'Space Defender 3000',
+                creator: '@VikramLabs',
+                genre: 'Shooter',
+                rating: '4.9',
+                verifiedPlays: 12,
+                likes: 82,
+                liked: false,
+                isCommunity: false,
+                template: 'defender',
+                description: 'Blast incoming asteroid waves and alien drones with auto-pulse plasma cannons.',
+                controls: 'Move Mouse, Touch, or Left/Right Arrows to steer & fire',
+                accent: 'from-emerald-600 to-teal-700',
+                icon: 'fa-shuttle-space'
+            }
+        ];
+
+        let activeCategory = 'All';
+        let searchQuery = '';
+        let activeGame = null;
+        let animationFrameId = null;
+
+        // 5-Minute Active Timer State
+        let activeSecondsElapsed = 0;
+        let lastInteractionTimestamp = 0;
+        let activeTimerInterval = null;
+        let isTabVisible = true;
+
+        // Audit logs & submissions
+        let totalSubmittedCount = 12; // Starts at 12/15 toward the ₹500 profit-protected pool unlock
+        let verifiedPlayAuditLogs = [];
+        let userSubmissions = [];
+
+        // Track tab visibility so switching tabs immediately pauses the 5-minute timer
+        document.addEventListener('visibilitychange', () => {
+            isTabVisible = !document.hidden;
+            updateTimerUI();
+        });
+
+        function registerUserInteraction() {
+            lastInteractionTimestamp = Date.now();
+        }
+
+        function formatSeconds(sec) {
+            const m = Math.floor(sec / 60).toString().padStart(2, '0');
+            const s = (sec % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const colors = type === 'error'
+                ? 'bg-rose-950/95 border-rose-500/50 text-rose-200'
+                : 'bg-slate-900/95 border-emerald-500/50 text-emerald-200';
+            const icon = type === 'error'
+                ? 'fa-circle-exclamation text-rose-400'
+                : 'fa-circle-check text-emerald-400';
+
+            toast.className = `pointer-events-auto px-4 py-3 rounded-xl border ${colors} shadow-2xl backdrop-blur-md text-xs sm:text-sm font-medium flex items-center gap-2.5 transition-opacity duration-300`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i><span>${escapeHtml(message)}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function updatePoolProgressUI() {
+            const target = 15;
+            const capped = Math.min(totalSubmittedCount, target);
+            const pct = Math.round((capped / target) * 100);
+            document.getElementById('submittedGamesProgressCount').textContent = totalSubmittedCount;
+            document.getElementById('poolUnlockBar').style.width = `${pct}%`;
+        }
+
+        function renderLeaderboard() {
+            const container = document.getElementById('leaderboardContainer');
+            const sorted = [...gamesCatalog].sort((a, b) => b.verifiedPlays - a.verifiedPlays).slice(0, 3);
+            const rankStyles = [
+                { badge: 'bg-amber-500/20 text-amber-300 border-amber-500/40', icon: 'fa-trophy text-amber-400', label: '#1 LEADER' },
+                { badge: 'bg-slate-400/20 text-slate-300 border-slate-400/30', icon: 'fa-medal text-slate-300', label: '#2 RUNNER-UP' },
+                { badge: 'bg-orange-500/20 text-orange-300 border-orange-500/30', icon: 'fa-award text-orange-400', label: '#3 CONTENDER' }
+            ];
+
+            container.innerHTML = sorted.map((g, idx) => {
+                const st = rankStyles[idx];
+                return `
+                    <div onclick="launchGame('${g.id}')" class="p-3.5 rounded-2xl bg-[#090d16] hover:bg-[#0e1422] border border-white/10 flex items-center justify-between gap-3 cursor-pointer transition">
+                        <div class="min-w-0">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${st.badge} mb-1">
+                                <i class="fa-solid ${st.icon}"></i> ${st.label}
+                            </span>
+                            <h4 class="font-display font-bold text-white text-sm truncate">${escapeHtml(g.title)}</h4>
+                            <p class="text-[11px] text-slate-400 truncate">${escapeHtml(g.creator)}</p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <span class="font-display text-xl font-bold text-emerald-400 block">${g.verifiedPlays}</span>
+                            <span class="text-[10px] text-slate-400 uppercase tracking-wider">5m Plays</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderGames() {
+            const grid = document.getElementById('gamesGrid');
+            const emptyState = document.getElementById('emptyState');
+            const countLabel = document.getElementById('visibleGamesCount');
+
+            const filtered = gamesCatalog.filter(game => {
+                const matchesCat = activeCategory === 'All' ||
+                                   (activeCategory === 'Community' ? game.isCommunity : game.genre === activeCategory);
+                const q = searchQuery.toLowerCase().trim();
+                const matchesSearch = !q || game.title.toLowerCase().includes(q) || game.creator.toLowerCase().includes(q) || game.genre.toLowerCase().includes(q);
+                return matchesCat && matchesSearch;
+            });
+
+            countLabel.textContent = filtered.length;
+            renderLeaderboard();
+            updatePoolProgressUI();
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = filtered.map(game => `
+                <article class="game-card glass-panel rounded-2xl overflow-hidden flex flex-col justify-between group">
+                    <div>
+                        <div onclick="launchGame('${game.id}')" class="relative h-44 bg-gradient-to-br ${game.accent} p-4 flex flex-col justify-between cursor-pointer overflow-hidden">
+                            <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.22),transparent_60%)]"></div>
+                            
+                            <div class="relative z-10 flex items-center justify-between gap-1.5">
+                                <span class="px-2.5 py-1 rounded-lg bg-black/50 backdrop-blur-md text-[11px] font-bold text-white border border-white/15">
+                                    ${escapeHtml(game.genre)}
+                                </span>
+                                <span class="text-xs font-bold text-emerald-300 bg-black/50 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                                    <i class="fa-regular fa-clock mr-1"></i>5m Rule
+                                </span>
+                            </div>
+
+                            <div class="relative z-10 flex items-center justify-center my-auto">
+                                <div class="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center text-white text-2xl group-hover:scale-110 transition-transform shadow-lg">
+                                    <i class="fa-solid ${game.icon}"></i>
+                                </div>
+                            </div>
+
+                            <div class="absolute inset-0 bg-slate-950/65 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span class="px-4 py-2 rounded-full bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-xl">
+                                    <i class="fa-solid fa-play"></i> Play (05:00 Session)
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 space-y-2">
+                            <h3 class="font-display font-bold text-white text-base leading-snug group-hover:text-cyan-300 transition">${escapeHtml(game.title)}</h3>
+                            <p class="text-xs text-slate-400 line-clamp-2">${escapeHtml(game.description)}</p>
+                        </div>
+                    </div>
+
+                    <div class="px-4 pb-4 pt-2 border-t border-white/5 flex items-center justify-between">
+                        <div class="text-[11px] text-slate-400 truncate">
+                            <span class="text-cyan-300 font-medium">${escapeHtml(game.creator)}</span>
+                            <span class="mx-1">•</span>
+                            <span class="text-emerald-400 font-bold">${game.verifiedPlays} valid plays</span>
+                        </div>
+                        <button onclick="launchGame('${game.id}')" class="px-3.5 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500 text-cyan-300 hover:text-slate-950 border border-cyan-500/30 text-xs font-bold transition cursor-pointer">
+                            Play
+                        </button>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        function setCategory(cat) {
+            activeCategory = cat;
+            document.querySelectorAll('.cat-pill').forEach(btn => {
+                if (btn.dataset.cat === cat) {
+                    btn.className = 'cat-pill active px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-cyan-500 text-slate-950 transition cursor-pointer shrink-0';
+                } else {
+                    btn.className = 'cat-pill px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition cursor-pointer shrink-0';
+                }
+            });
+            renderGames();
+        }
+
+        function handleSearch(val) {
+            searchQuery = val;
+            renderGames();
+        }
+
+        function resetFilters() {
+            activeCategory = 'All';
+            searchQuery = '';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('mobileSearchInput').value = '';
+            setCategory('All');
+        }
+
+        function launchFeaturedGame() {
+            if (gamesCatalog.length > 0) launchGame(gamesCatalog[0].id);
+        }
+
+        // ==================== 5-MINUTE ACTIVE PLAY TIMER ENGINE ====================
+        function startFiveMinuteTracker() {
+            stopFiveMinuteTracker();
+            activeSecondsElapsed = 0;
+            lastInteractionTimestamp = Date.now();
+            updateTimerUI();
+
+            activeTimerInterval = setInterval(() => {
+                if (!activeGame) return;
+
+                const now = Date.now();
+                const isIdle = (now - lastInteractionTimestamp) > IDLE_TIMEOUT_MS;
+
+                if (isTabVisible && !isIdle) {
+                    activeSecondsElapsed += 1;
+
+                    if (activeSecondsElapsed >= REQUIRED_ACTIVE_SECONDS) {
+                        // Award +1 Verified Play!
+                        activeGame.verifiedPlays += 1;
+                        document.getElementById('modalGameVerifiedPlays').textContent = activeGame.verifiedPlays;
+
+                        // Record in audit log
+                        verifiedPlayAuditLogs.unshift({
+                            gameTitle: activeGame.title,
+                            creator: activeGame.creator,
+                            duration: '05:00',
+                            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                        });
+                        document.getElementById('auditCountBadge').textContent = verifiedPlayAuditLogs.length;
+
+                        showToast(`5-Minute Play Verified! +1 Valid Play Counted for ${activeGame.title}`);
+                        renderGames();
+
+                        // Reset timer to 00:00 so player can continue playing for another 5-minute cycle
+                        activeSecondsElapsed = 0;
+                    }
+                }
+                updateTimerUI();
+            }, 1000);
+        }
+
+        function stopFiveMinuteTracker() {
+            if (activeTimerInterval) {
+                clearInterval(activeTimerInterval);
+                activeTimerInterval = null;
+            }
+        }
+
+        function updateTimerUI() {
+            const timerText = document.getElementById('activeTimerText');
+            const progressBar = document.getElementById('activeTimerProgressBar');
+            const badge = document.getElementById('timerStateBadge');
+            const dot = document.getElementById('activeStatusDot');
+
+            if (!timerText || !progressBar) return;
+
+            const isIdle = (Date.now() - lastInteractionTimestamp) > IDLE_TIMEOUT_MS;
+            const isActive = isTabVisible && !isIdle;
+
+            timerText.textContent = `${formatSeconds(activeSecondsElapsed)} / 05:00`;
+            const pct = Math.min(100, (activeSecondsElapsed / REQUIRED_ACTIVE_SECONDS) * 100);
+            progressBar.style.width = `${pct}%`;
+
+            if (isActive) {
+                badge.textContent = 'ACTIVE';
+                badge.className = 'px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase tracking-wider';
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
+            } else {
+                badge.textContent = !isTabVisible ? 'PAUSED (TAB HIDDEN)' : 'PAUSED (IDLE > 10s)';
+                badge.className = 'px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold uppercase tracking-wider';
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400';
+            }
+        }
+
+        // ==================== GAME ENGINE & MODAL CONTROLS ====================
+        function stopRunningEngines() {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            window.onkeydown = null;
+            const canvas = document.getElementById('gameCanvas');
+            if (canvas) {
+                canvas.onmousemove = null;
+                canvas.ontouchmove = null;
+                canvas.ontouchstart = null;
+                canvas.onclick = null;
+            }
+        }
+
+        function launchGame(gameId) {
+            const game = gamesCatalog.find(g => g.id === gameId);
+            if (!game) return;
+
+            stopRunningEngines();
+            activeGame = game;
+
+            document.getElementById('playerGenreBadge').textContent = game.genre;
+            document.getElementById('playerGameTitle').textContent = game.title;
+            document.getElementById('playerCreatorName').textContent = `by ${game.creator}`;
+            document.getElementById('liveScoreDisplay').textContent = '0';
+            document.getElementById('modalGameVerifiedPlays').textContent = game.verifiedPlays;
+            document.getElementById('playerControlsHint').innerHTML = `<i class="fa-solid fa-gamepad text-cyan-400"></i><span>${escapeHtml(game.controls)}</span>`;
+            document.getElementById('gameOverlay').classList.add('hidden');
+            updateLikeButtonUI();
+
+            document.getElementById('playerModal').classList.remove('hidden');
+
+            const canvas = document.getElementById('gameCanvas');
+            const customFrame = document.getElementById('customGameFrame');
+
+            if (game.template === 'custom' && game.customHtml) {
+                canvas.classList.add('hidden');
+                customFrame.classList.remove('hidden');
+                customFrame.srcdoc = game.customHtml;
+            } else {
+                customFrame.classList.add('hidden');
+                canvas.classList.remove('hidden');
+                resizeGameCanvas();
+                startBuiltInEngine(game.template);
+            }
+
+            // Start fresh 5-minute active session tracker
+            startFiveMinuteTracker();
+        }
+
+        function resizeGameCanvas() {
+            const canvas = document.getElementById('gameCanvas');
+            const wrapper = document.getElementById('gameViewportWrapper');
+            if (canvas && wrapper) {
+                canvas.width = wrapper.clientWidth || 800;
+                canvas.height = wrapper.clientHeight || 450;
+            }
+        }
+
+        function restartCurrentGame() {
+            if (!activeGame) return;
+            registerUserInteraction();
+            stopRunningEngines();
+            document.getElementById('liveScoreDisplay').textContent = '0';
+            document.getElementById('gameOverlay').classList.add('hidden');
+            resizeGameCanvas();
+            startBuiltInEngine(activeGame.template);
+        }
+
+        function closePlayerModal() {
+            stopRunningEngines();
+            stopFiveMinuteTracker();
+            document.getElementById('playerModal').classList.add('hidden');
+            activeGame = null;
+        }
+
+        function toggleLikeCurrentGame() {
+            if (!activeGame) return;
+            registerUserInteraction();
+            activeGame.liked = !activeGame.liked;
+            activeGame.likes += activeGame.liked ? 1 : -1;
+            updateLikeButtonUI();
+            if (activeGame.liked) showToast(`Liked ${activeGame.title}!`);
+        }
+
+        function updateLikeButtonUI() {
+            if (!activeGame) return;
+            const btn = document.getElementById('likeGameBtn');
+            const txt = document.getElementById('likeCountText');
+            txt.textContent = `${activeGame.likes}`;
+            btn.className = activeGame.liked
+                ? 'px-3.5 py-1.5 rounded-xl bg-rose-500/20 border border-rose-500/40 text-xs font-bold text-rose-300 flex items-center gap-1.5 cursor-pointer'
+                : 'px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 flex items-center gap-1.5 cursor-pointer';
+        }
+
+        function showGameOver(score) {
+            stopRunningEngines();
+            document.getElementById('overlayTitle').textContent = `Round Score: ${score}`;
+            document.getElementById('gameOverlay').classList.remove('hidden');
+        }
+
+        function triggerVirtualKey(key) {
+            registerUserInteraction();
+            window.dispatchEvent(new KeyboardEvent('keydown', { key, code: key === 'Space' ? 'Space' : key }));
+        }
+
+        // ==================== 3 ENDLESS BUILT-IN MINI-GAMES ====================
+        function startBuiltInEngine(template) {
+            const canvas = document.getElementById('gameCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const scoreEl = document.getElementById('liveScoreDisplay');
+
+            if (template === 'runner') {
+                // 1. NEON RUNNER (Endless Jump & Orb Collector)
+                let score = 0;
+                let speed = 5.5;
+                const groundY = canvas.height - 46;
+                const player = { x: 85, y: groundY - 32, w: 28, h: 32, vy: 0, grounded: true };
+                const obstacles = [];
+                const orbs = [];
+                let frame = 0;
+
+                const jump = () => {
+                    registerUserInteraction();
+                    if (player.grounded) {
+                        player.vy = -11.5;
+                        player.grounded = false;
+                    }
+                };
+
+                canvas.onclick = jump;
+                canvas.ontouchstart = (e) => { e.preventDefault(); jump(); };
+                window.onkeydown = (e) => {
+                    registerUserInteraction();
+                    if (e.code === 'Space' || e.key === 'ArrowUp' || e.key === 'w') {
+                        e.preventDefault();
+                        jump();
+                    }
+                };
+
+                function loop() {
+                    frame++;
+                    speed = Math.min(11, 5.5 + score * 0.002);
+
+                    ctx.fillStyle = '#06080e';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Neon grid floor
+                    ctx.strokeStyle = '#06b6d4';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(0, groundY);
+                    ctx.lineTo(canvas.width, groundY);
+                    ctx.stroke();
+
+                    // Physics
+                    player.vy += 0.58;
+                    player.y += player.vy;
+                    if (player.y >= groundY - player.h) {
+                        player.y = groundY - player.h;
+                        player.vy = 0;
+                        player.grounded = true;
+                    }
+
+                    // Spawn barriers & energy orbs
+                    if (frame % Math.max(55, Math.floor(95 - speed * 3)) === 0) {
+                        const h = 26 + Math.random() * 22;
+                        obstacles.push({ x: canvas.width + 20, y: groundY - h, w: 22, h });
+                        if (Math.random() > 0.4) {
+                            orbs.push({ x: canvas.width + 30, y: groundY - h - 42, r: 8 });
+                        }
+                    }
+
+                    // Update obstacles
+                    for (let i = obstacles.length - 1; i >= 0; i--) {
+                        const o = obstacles[i];
+                        o.x -= speed;
+                        ctx.fillStyle = '#f43f5e';
+                        ctx.fillRect(o.x, o.y, o.w, o.h);
+
+                        if (player.x < o.x + o.w - 4 && player.x + player.w > o.x + 4 && player.y + player.h > o.y + 4) {
+                            showGameOver(score);
+                            return;
+                        }
+                        if (o.x + o.w < 0) {
+                            obstacles.splice(i, 1);
+                            score += 10;
+                            scoreEl.textContent = score;
+                        }
+                    }
+
+                    // Update orbs
+                    for (let i = orbs.length - 1; i >= 0; i--) {
+                        const orb = orbs[i];
+                        orb.x -= speed;
+                        ctx.fillStyle = '#34d399';
+                        ctx.beginPath();
+                        ctx.arc(orb.x, orb.y, orb.r, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        if (Math.hypot(player.x + player.w / 2 - orb.x, player.y + player.h / 2 - orb.y) < 24) {
+                            orbs.splice(i, 1);
+                            score += 25;
+                            scoreEl.textContent = score;
+                        } else if (orb.x < -20) {
+                            orbs.splice(i, 1);
+                        }
+                    }
+
+                    // Draw Runner
+                    ctx.fillStyle = '#22d3ee';
+                    ctx.fillRect(player.x, player.y, player.w, player.h);
+
+                    animationFrameId = requestAnimationFrame(loop);
+                }
+                loop();
+
+            } else if (template === 'pong') {
+                // 2. CYBER PONG ARENA (Endless Rally vs AI)
+                let score = 0;
+                const paddleH = 84, paddleW = 12;
+                const player = { x: 24, y: canvas.height / 2 - paddleH / 2 };
+                const ai = { x: canvas.width - 36, y: canvas.height / 2 - paddleH / 2 };
+                const ball = { x: canvas.width / 2, y: canvas.height / 2, r: 9, vx: 5, vy: 3.5 };
+
+                canvas.onmousemove = (e) => {
+                    registerUserInteraction();
+                    const rect = canvas.getBoundingClientRect();
+                    player.y = Math.max(0, Math.min(canvas.height - paddleH, e.clientY - rect.top - paddleH / 2));
+                };
+                canvas.ontouchmove = (e) => {
+                    e.preventDefault();
+                    registerUserInteraction();
+                    const rect = canvas.getBoundingClientRect();
+                    player.y = Math.max(0, Math.min(canvas.height - paddleH, e.touches[0].clientY - rect.top - paddleH / 2));
+                };
+                window.onkeydown = (e) => {
+                    registerUserInteraction();
+                    if (e.key === 'ArrowUp') player.y = Math.max(0, player.y - 36);
+                    if (e.key === 'ArrowDown') player.y = Math.min(canvas.height - paddleH, player.y + 36);
+                };
+
+                function loop() {
+                    ctx.fillStyle = '#06080e';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Center line
+                    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                    ctx.setLineDash([8, 8]);
+                    ctx.beginPath();
+                    ctx.moveTo(canvas.width / 2, 0);
+                    ctx.lineTo(canvas.width / 2, canvas.height);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // AI movement
+                    const aiCenter = ai.y + paddleH / 2;
+                    ai.y += (ball.y - aiCenter) * 0.085;
+                    ai.y = Math.max(0, Math.min(canvas.height - paddleH, ai.y));
+
+                    // Ball physics
+                    ball.x += ball.vx;
+                    ball.y += ball.vy;
+
+                    if (ball.y - ball.r < 0 || ball.y + ball.r > canvas.height) ball.vy = -ball.vy;
+
+                    // Player paddle hit
+                    if (ball.x - ball.r <= player.x + paddleW && ball.y >= player.y && ball.y <= player.y + paddleH && ball.vx < 0) {
+                        ball.vx = Math.min(11, Math.abs(ball.vx) + 0.35);
+                        ball.vy += (ball.y - (player.y + paddleH / 2)) * 0.06;
+                        score += 15;
+                        scoreEl.textContent = score;
+                    }
+
+                    // AI paddle hit
+                    if (ball.x + ball.r >= ai.x && ball.y >= ai.y && ball.y <= ai.y + paddleH && ball.vx > 0) {
+                        ball.vx = -Math.abs(ball.vx);
+                    }
+
+                    if (ball.x < 0) {
+                        showGameOver(score);
+                        return;
+                    }
+                    if (ball.x > canvas.width) {
+                        score += 50;
+                        scoreEl.textContent = score;
+                        ball.x = canvas.width / 2;
+                        ball.y = canvas.height / 2;
+                        ball.vx = -5;
+                    }
+
+                    // Draw paddles & ball
+                    ctx.fillStyle = '#22d3ee';
+                    ctx.fillRect(player.x, player.y, paddleW, paddleH);
+
+                    ctx.fillStyle = '#c084fc';
+                    ctx.fillRect(ai.x, ai.y, paddleW, paddleH);
+
+                    ctx.fillStyle = '#34d399';
+                    ctx.beginPath();
+                    ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    animationFrameId = requestAnimationFrame(loop);
+                }
+                loop();
+
+            } else {
+                // 3. SPACE DEFENDER 3000 (Endless Wave Shooter)
+                let score = 0;
+                const ship = { x: canvas.width / 2, y: canvas.height - 42, r: 16 };
+                const bullets = [];
+                const enemies = [];
+                let frame = 0;
+
+                canvas.onmousemove = (e) => {
+                    registerUserInteraction();
+                    const rect = canvas.getBoundingClientRect();
+                    ship.x = Math.max(24, Math.min(canvas.width - 24, e.clientX - rect.left));
+                };
+                canvas.ontouchmove = (e) => {
+                    e.preventDefault();
+                    registerUserInteraction();
+                    const rect = canvas.getBoundingClientRect();
+                    ship.x = Math.max(24, Math.min(canvas.width - 24, e.touches[0].clientX - rect.left));
+                };
+                window.onkeydown = (e) => {
+                    registerUserInteraction();
+                    if (e.key === 'ArrowLeft') ship.x = Math.max(24, ship.x - 32);
+                    if (e.key === 'ArrowRight') ship.x = Math.min(canvas.width - 24, ship.x + 32);
+                };
+
+                function loop() {
+                    frame++;
+                    ctx.fillStyle = '#06080e';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Auto fire plasma bolts
+                    if (frame % 14 === 0) {
+                        bullets.push({ x: ship.x, y: ship.y - 16, vy: -9 });
+                    }
+
+                    // Spawn enemies
+                    if (frame % 32 === 0) {
+                        enemies.push({
+                            x: 30 + Math.random() * (canvas.width - 60),
+                            y: -20,
+                            r: 14 + Math.random() * 6,
+                            vy: 2.4 + Math.min(4, score * 0.0015)
+                        });
+                    }
+
+                    // Update bullets
+                    ctx.fillStyle = '#22d3ee';
+                    for (let i = bullets.length - 1; i >= 0; i--) {
+                        const b = bullets[i];
+                        b.y += b.vy;
+                        ctx.fillRect(b.x - 2, b.y - 8, 4, 14);
+                        if (b.y < -20) bullets.splice(i, 1);
+                    }
+
+                    // Update enemies
+                    for (let i = enemies.length - 1; i >= 0; i--) {
+                        const en = enemies[i];
+                        en.y += en.vy;
+
+                        ctx.fillStyle = '#f43f5e';
+                        ctx.beginPath();
+                        ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Bullet collision
+                        let destroyed = false;
+                        for (let j = bullets.length - 1; j >= 0; j--) {
+                            const b = bullets[j];
+                            if (Math.hypot(en.x - b.x, en.y - b.y) < en.r + 6) {
+                                bullets.splice(j, 1);
+                                enemies.splice(i, 1);
+                                score += 20;
+                                scoreEl.textContent = score;
+                                destroyed = true;
+                                break;
+                            }
+                        }
+                        if (destroyed) continue;
+
+                        // Ship collision
+                        if (Math.hypot(ship.x - en.x, ship.y - en.y) < ship.r + en.r - 4) {
+                            showGameOver(score);
+                            return;
+                        }
+
+                        if (en.y > canvas.height + 25) {
+                            enemies.splice(i, 1);
+                        }
+                    }
+
+                    // Draw Starfighter
+                    ctx.fillStyle = '#34d399';
+                    ctx.beginPath();
+                    ctx.moveTo(ship.x, ship.y - 18);
+                    ctx.lineTo(ship.x - 16, ship.y + 14);
+                    ctx.lineTo(ship.x + 16, ship.y + 14);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    animationFrameId = requestAnimationFrame(loop);
+                }
+                loop();
+            }
+        }
+
+        // ==================== PUBLISH & ₹50 UPI UTR WORKFLOW ====================
+        function openPublishModal() {
+            document.getElementById('publishStep1').classList.remove('hidden');
+            document.getElementById('publishStep2').classList.add('hidden');
+            document.getElementById('publishStep3').classList.add('hidden');
+            updatePublishSteps(1);
+            document.getElementById('publishModal').classList.remove('hidden');
+        }
+
+        function closePublishModal() {
+            document.getElementById('publishModal').classList.add('hidden');
+        }
+
+        function updatePublishSteps(step) {
+            for (let i = 1; i <= 3; i++) {
+                const el = document.getElementById(`stepIndicator${i}`);
+                if (!el) continue;
+                if (i <= step) {
+                    el.className = 'flex items-center gap-2 font-semibold text-cyan-400';
+                    el.querySelector('span').className = 'w-5 h-5 rounded-full bg-cyan-500 text-slate-950 font-bold flex items-center justify-center text-[11px]';
+                } else {
+                    el.className = 'flex items-center gap-2 font-medium text-slate-500';
+                    el.querySelector('span').className = 'w-5 h-5 rounded-full bg-white/10 text-slate-400 flex items-center justify-center text-[11px]';
+                }
+            }
+        }
+
+        function copyUpiId() {
+            const input = document.getElementById('upiIdField');
+            input.select();
+            document.execCommand('copy');
+            showToast('UPI ID copied: kumarguptasunil01790@oksbi');
+        }
+
+        function goToPaymentStep() {
+            const title = document.getElementById('pubTitle').value.trim();
+            const creator = document.getElementById('pubCreator').value.trim();
+            if (!title || !creator) {
+                showToast('Please enter both Game Title and Creator Handle.', 'error');
+                return;
+            }
+
+            document.getElementById('checkoutGameName').textContent = `${title} (${creator})`;
+
+            const upiId = 'kumarguptasunil01790@oksbi';
+            const payeeName = 'DusPus';
+            const amount = '50.00';
+            const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR`;
+
+            document.getElementById('upiDeepLink').href = upiLink;
+
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: upiLink,
+                width: 104,
+                height: 104,
+                colorDark: '#07090f',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            document.getElementById('publishStep1').classList.add('hidden');
+            document.getElementById('publishStep2').classList.remove('hidden');
+            updatePublishSteps(2);
+        }
+
+        function backToStep1() {
+            document.getElementById('publishStep2').classList.add('hidden');
+            document.getElementById('publishStep1').classList.remove('hidden');
+            updatePublishSteps(1);
+        }
+
+        function submitHonorListing() {
+            const utr = document.getElementById('honorUtrInput').value.trim();
+            if (!/^\d{12}$/.test(utr)) {
+                showToast('Please enter a valid 12-digit numeric UTR transaction ID.', 'error');
+                return;
+            }
+
+            const title = document.getElementById('pubTitle').value.trim();
+            let creator = document.getElementById('pubCreator').value.trim();
+            if (!creator.startsWith('@')) creator = '@' + creator;
+            const genre = document.getElementById('pubGenre').value;
+            const template = document.getElementById('pubTemplate').value;
+            const desc = document.getElementById('pubDesc').value.trim() || 'Indie HTML5 game competing for the ₹500 Monthly Prize Pool!';
+            const customHtml = document.getElementById('pubCustomHtml').value.trim();
+
+            const newId = 'game-' + Date.now();
+            const newGame = {
+                id: newId,
+                title,
+                creator,
+                genre,
+                rating: '5.0',
+                verifiedPlays: 0,
+                likes: 1,
+                liked: false,
+                isCommunity: true,
+                template: (template === 'custom' && customHtml) ? 'custom' : (template === 'custom' ? 'runner' : template),
+                customHtml,
+                description: desc,
+                controls: 'Interactive Keyboard / Mouse / Touch Controls',
+                accent: 'from-fuchsia-600 to-purple-800',
+                icon: 'fa-gamepad'
+            };
+
+            gamesCatalog.unshift(newGame);
+            totalSubmittedCount += 1;
+            userSubmissions.unshift({
+                title,
+                creator,
+                utr,
+                date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+
+            renderGames();
+
+            document.getElementById('publishedSuccessTitle').textContent = title;
+            document.getElementById('receiptUtrId').textContent = utr;
+            document.getElementById('playNewlyPublishedBtn').onclick = () => {
+                closePublishModal();
+                launchGame(newId);
+            };
+
+            document.getElementById('publishStep2').classList.add('hidden');
+            document.getElementById('publishStep3').classList.remove('hidden');
+            updatePublishSteps(3);
+            showToast(`UTR ${utr} recorded! "${title}" is live on Arcade Pulse.`);
+        }
+
+        // ==================== AUDIT LOG MODAL ====================
+        function openAuditModal() {
+            const playList = document.getElementById('verifiedPlayLogList');
+            if (verifiedPlayAuditLogs.length === 0) {
+                playList.innerHTML = `<p class="text-xs text-slate-500 p-3 rounded-xl bg-[#070a12] border border-white/5">No 5-minute sessions completed yet in this browser session. Play any game for 05:00 to log a verified play!</p>`;
+            } else {
+                playList.innerHTML = verifiedPlayAuditLogs.map(log => `
+                    <div class="p-3 rounded-xl bg-[#070a12] border border-emerald-500/25 flex items-center justify-between text-xs">
+                        <div>
+                            <span class="font-bold text-white">${escapeHtml(log.gameTitle)}</span>
+                            <span class="text-slate-400 ml-1">(${escapeHtml(log.creator)})</span>
+                        </div>
+                        <span class="font-mono text-emerald-400 font-bold">+1 Play (${log.duration}) • ${log.timestamp}</span>
+                    </div>
+                `).join('');
+            }
+
+            const subList = document.getElementById('studioSubmissionsList');
+            if (userSubmissions.length === 0) {
+                subList.innerHTML = `<p class="text-xs text-slate-500 p-3 rounded-xl bg-[#070a12] border border-white/5">No ₹50 UTR game submissions yet.</p>`;
+            } else {
+                subList.innerHTML = userSubmissions.map(s => `
+                    <div class="p-3 rounded-xl bg-[#070a12] border border-white/10 flex items-center justify-between text-xs">
+                        <div>
+                            <p class="font-bold text-white">${escapeHtml(s.title)} <span class="text-cyan-300 font-normal">(${escapeHtml(s.creator)})</span></p>
+                            <p class="text-[11px] text-slate-400 font-mono">UTR: <span class="text-emerald-400">${escapeHtml(s.utr)}</span> • ₹50 Paid to DusPus • ${s.date}</p>
+                        </div>
+                        <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">VERIFIED</span>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('auditModal').classList.remove('hidden');
+        }
+
+        function closeAuditModal() {
+            document.getElementById('auditModal').classList.add('hidden');
+        }
+
+        window.onload = function () {
+            renderGames();
+        };
+    </script>
+</body>
+</html>
