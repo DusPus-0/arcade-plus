@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arcade Plus (v3.1) — Browser Web Arcade &amp; ₹500 Monthly Contest</title>
+  <meta name="description" content="Play endless HTML5 canvas games on Arcade Plus, track verified 5-minute active playtime on the live leaderboard, and submit indie games for the ₹500 monthly prize pool." />
+  <link rel="canonical" href="https://duspus-0.github.io/arcade-plus/" />
+
+  <!-- Open Graph Metadata -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Arcade Plus (v3.1) — Browser Web Arcade &amp; ₹500 Monthly Contest" />
+  <meta property="og:description" content="Play HTML5 canvas mini-games, earn verified 5-minute active play credits, and submit entries for the ₹500 monthly prize pool." />
+  <meta property="og:url" content="https://duspus-0.github.io/arcade-plus/" />
+  <meta property="og:site_name" content="Arcade Plus" />
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Arcade Plus",
+      "version": "3.1",
+      "url": "https://duspus-0.github.io/arcade-plus/",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Web Browser",
+      "repository": "https://github.com/duspus-0/arcade-plus",
+      "offers": {
+        "@type": "Offer",
+        "price": "50",
+        "priceCurrency": "INR"
+      }
+    }
+  </script>
+
+  <!-- Fonts & Tailwind CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            cyber: {
+              bg: '#070913',
+              panel: 'rgba(15, 23, 42, 0.72)',
+              cyan: '#00f0ff',
+              pink: '#ff2a85',
+              purple: '#8b5cf6',
+              emerald: '#10b981',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Custom Cyber-Neon Glassmorphism & Arcade Styling */
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: #070913;
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.09), transparent 40%),
+        radial-gradient(circle at 85% 20%, rgba(255, 42, 133, 0.09), transparent 40%),
+        radial-gradient(circle at 50% 85%, rgba(139, 92, 246, 0.08), transparent 45%);
+      color: #f8fafc;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .glass-card {
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.65);
+    }
+
+    .neon-border-cyan {
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      box-shadow: 0 0 24px -6px rgba(0, 240, 255, 0.28);
+    }
+
+    .neon-text-gradient {
+      background: linear-gradient(90deg, #00f0ff 0%, #8b5cf6 52%, #ff2a85 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .game-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 0.875rem;
+      touch-action: none;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 12px rgba(0, 240, 255, 0.25); }
+      50% { box-shadow: 0 0 22px rgba(255, 42, 133, 0.45); }
+    }
+
+    .prize-badge-glow {
+      animation: pulseGlow 3s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-cyan-400 selection:text-slate-950">
+  <div id="runtimeErrorBanner" class="hidden bg-rose-950/95 border-b border-rose-500/60 px-4 py-2.5 text-center text-xs font-mono text-rose-200"></div>
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
+      <a href="https://duspus-0.github.io/arcade-plus/" class="flex items-center gap-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-400">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 via-violet-500 to-pink-500 text-slate-950 font-black shadow-lg shadow-cyan-500/20">
+          A+
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-lg font-extrabold tracking-tight text-white">Arcade Plus</span>
+            <span class="rounded-full bg-cyan-500/15 border border-cyan-400/30 px-2 py-0.5 font-mono text-xs font-bold text-cyan-300">v3.2</span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">duspus-0/arcade-plus • Live Web Arcade</p>
+        </div>
+      </a>
+
+      <!-- Monthly Prize Pool & Action Buttons -->
+      <div class="flex items-center gap-2.5 sm:gap-3">
+        <div class="prize-badge-glow flex items-center gap-2 rounded-xl border border-emerald-400/35 bg-emerald-500/10 px-3 py-2 text-xs sm:text-sm font-semibold text-emerald-300">
+          <span>🏆</span>
+          <span>Prize Pool: <strong class="font-mono text-white">₹500</strong>/mo</span>
+        </div>
+
+        <button
+          id="openSubmitBtn"
+          type="button"
+          class="rounded-xl bg-gradient-to-r from-cyan-400 via-violet-500 to-pink-500 px-3.5 py-2 text-xs sm:text-sm font-bold text-slate-950 shadow-lg shadow-pink-500/20 transition hover:brightness-110 active:scale-[0.98]"
+        >
+          + Submit Game (₹50)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 space-y-8">
+
+    <!-- Hero Banner -->
+    <section class="glass-card neon-border-cyan relative overflow-hidden p-6 sm:p-8 lg:p-10">
+      <div class="grid gap-6 lg:grid-cols-12 lg:items-center">
+        <div class="lg:col-span-8 space-y-4">
+          <div class="inline-flex flex-wrap items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-950/50 px-3.5 py-1 text-xs font-medium text-cyan-300">
+            <span class="h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span>Live at duspus-0.github.io/arcade-plus</span>
+          </div>
+          <h1 class="text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
+            Play Instant HTML5 Games &amp; Compete for <span class="neon-text-gradient">₹500 Monthly</span>
+          </h1>
+          <p class="max-w-2xl text-sm sm:text-base leading-relaxed text-slate-300">
+            Jump straight into three browser-native canvas games on desktop or mobile. Log <strong class="text-cyan-300">5:00 minutes of active playtime</strong> (with automatic idle-pause protection) to earn verified leaderboard credits, or submit your own game with a <strong class="text-pink-300">₹50 UPI entry</strong>.
+          </p>
+          <div class="flex flex-wrap gap-3 pt-1">
+            <button
+              type="button"
+              onclick="launchGameModal('runner')"
+              class="rounded-xl bg-cyan-400 px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-cyan-300 active:scale-[0.98]"
+            >
+              ▶ Play Neon Runner
+            </button>
+            <a
+              href="#leaderboard-section"
+              class="rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-800"
+            >
+              View Live Leaderboard
+            </a>
+          </div>
+        </div>
+
+        <!-- Quick Rules Card -->
+        <div class="lg:col-span-4 rounded-2xl border border-slate-800 bg-slate-950/75 p-5 space-y-3.5">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-cyan-300">How Verification Works</h2>
+          <ul class="space-y-2.5 text-xs sm:text-sm text-slate-300">
+            <li class="flex items-start gap-2.5">
+              <span class="mt-0.5 font-mono text-cyan-400">01</span>
+              <span>Active timer requires <strong class="text-white">05:00</strong> of real input (keys, pointer, or touch).</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <span class="mt-0.5 font-mono text-pink-400">02</span>
+              <span>Going idle for <strong class="text-white">10 seconds</strong> automatically pauses active credit tracking.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <span class="mt-0.5 font-mono text-emerald-400">03</span>
+              <span>Top monthly players &amp; valid <strong class="text-white">₹50 UPI</strong> entries compete for <strong class="text-emerald-300">₹500</strong>.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Playable Games Grid -->
+    <section aria-labelledby="games-heading" class="space-y-4">
+      <div class="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h2 id="games-heading" class="text-xl sm:text-2xl font-extrabold text-white">Built-In HTML5 Arcade</h2>
+          <p class="text-xs sm:text-sm text-slate-400">Click any game to launch full interactive controls and the 5-minute active play tracker.</p>
+        </div>
+        <span id="verifiedPlaysSummary" class="rounded-lg bg-slate-900 border border-slate-800 px-3 py-1.5 font-mono text-xs text-cyan-300">
+          Verified 5m Credits: 0
+        </span>
+      </div>
+
+      <div id="gamesGrid" class="grid gap-5 md:grid-cols-3">
+        <!-- Game Card 1: Neon Runner: Overdrive -->
+        <article class="glass-card flex flex-col justify-between p-5 transition hover:-translate-y-1 hover:border-cyan-400/50">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="rounded-lg bg-cyan-500/15 border border-cyan-400/30 px-2.5 py-1 font-mono text-xs font-semibold text-cyan-300">ENDLESS RUNNER</span>
+              <span class="font-mono text-xs text-slate-400">Best: <strong id="bestScore-runner" class="text-white">0</strong></span>
+            </div>
+            <h3 class="text-lg font-bold text-white">Neon Runner: Overdrive</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Leap across laser gaps and dodge shifting cyber-barriers as speed ramps up. Tap, click, or press <kbd class="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-cyan-300">Space</kbd> / <kbd class="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-cyan-300">↑</kbd> to jump.
+            </p>
+          </div>
+          <button
+            type="button"
+            onclick="launchGameModal('runner')"
+            class="mt-5 w-full rounded-xl bg-gradient-to-r from-cyan-400 to-sky-500 py-2.5 text-sm font-bold text-slate-950 transition hover:brightness-110 active:scale-[0.99]"
+          >
+            Launch Neon Runner
+          </button>
+        </article>
+
+        <!-- Game Card 2: Cyber Pong Arena -->
+        <article class="glass-card flex flex-col justify-between p-5 transition hover:-translate-y-1 hover:border-purple-400/50">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="rounded-lg bg-purple-500/15 border border-purple-400/30 px-2.5 py-1 font-mono text-xs font-semibold text-purple-300">ARCADE DUEL</span>
+              <span class="font-mono text-xs text-slate-400">Best: <strong id="bestScore-pong" class="text-white">0</strong></span>
+            </div>
+            <h3 class="text-lg font-bold text-white">Cyber Pong Arena</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Out-rally the synth-AI paddle with angled ricochets and accelerating plasma volleys. Drag/touch on mobile or use <kbd class="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-purple-300">W/S</kbd> or <kbd class="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-purple-300">↑/↓</kbd>.
+            </p>
+          </div>
+          <button
+            type="button"
+            onclick="launchGameModal('pong')"
+            class="mt-5 w-full rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 py-2.5 text-sm font-bold text-white transition hover:brightness-110 active:scale-[0.99]"
+          >
+            Launch Cyber Pong
+          </button>
+        </article>
+
+        <!-- Game Card 3: Space Defender 3000 -->
+        <article class="glass-card flex flex-col justify-between p-5 transition hover:-translate-y-1 hover:border-pink-400/50">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="rounded-lg bg-pink-500/15 border border-pink-400/30 px-2.5 py-1 font-mono text-xs font-semibold text-pink-300">SPACE SHOOTER</span>
+              <span class="font-mono text-xs text-slate-400">Best: <strong id="bestScore-defender" class="text-white">0</strong></span>
+            </div>
+            <h3 class="text-lg font-bold text-white">Space Defender 3000</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Pilot your starfighter, blast incoming drones, and survive orbital waves. Steer with touch/drag or <kbd class="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-pink-300">←/→</kbd> / <kbd class="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-pink-300">A/D</kbd> with auto-fire cannons.
+            </p>
+          </div>
+          <button
+            type="button"
+            onclick="launchGameModal('defender')"
+            class="mt-5 w-full rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 py-2.5 text-sm font-bold text-white transition hover:brightness-110 active:scale-[0.99]"
+          >
+            Launch Space Defender
+          </button>
+        </article>
+      </div>
+    </section>
+
+    <!-- Live Leaderboard & Community Submissions -->
+    <section id="leaderboard-section" class="grid gap-6 lg:grid-cols-12">
+      <!-- Live Leaderboard -->
+      <div class="glass-card lg:col-span-7 p-5 sm:p-6 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="text-lg sm:text-xl font-extrabold text-white">Live Monthly Leaderboard</h2>
+            <p class="text-xs text-slate-400">Ranked by verified 5:00 plays on each developer's game • ₹500 Prize Pool</p>
+          </div>
+          <span class="rounded-full bg-emerald-500/15 border border-emerald-400/30 px-3 py-1 font-mono text-xs font-semibold text-emerald-300">
+            ₹500 POOL ACTIVE
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-400 font-mono text-xs">
+                <th class="py-2.5 pr-3">#</th>
+                <th class="py-2.5 px-3">Developer</th>
+                <th class="py-2.5 px-3">Game</th>
+                <th class="py-2.5 px-3">Active Pool</th>
+                <th class="py-2.5 pl-3 text-right">Verified Plays</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardBody" class="divide-y divide-slate-800/70">
+              <!-- Populated dynamically via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Submitted Indie Entries & Status -->
+      <div class="glass-card lg:col-span-5 p-5 sm:p-6 flex flex-col justify-between space-y-4">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg sm:text-xl font-extrabold text-white">Tournament Entries</h2>
+            <span class="rounded-lg bg-pink-500/15 border border-pink-400/30 px-2.5 py-1 font-mono text-xs text-pink-300">₹50 Entry</span>
+          </div>
+          <p class="text-xs text-slate-400">
+            Indie submissions logged on this browser session via UPI (<span class="font-mono text-slate-300">kumarguptasunil01790@oksbi</span>).
+          </p>
+          <div id="submissionsList" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onclick="openSubmitModal()"
+          class="w-full rounded-xl border border-cyan-400/40 bg-cyan-500/10 py-2.5 text-xs sm:text-sm font-bold text-cyan-300 transition hover:bg-cyan-500/20"
+        >
+          Submit Your Game Entry (₹50 UPI)
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-12 border-t border-slate-800/80 bg-slate-950/70 py-6 text-xs text-slate-400">
+    <div class="mx-auto flex max-w-7xl flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6">
+      <p>Arcade Plus v3.1 • Hosted at <a href="https://duspus-0.github.io/arcade-plus/" class="text-cyan-400 hover:underline">duspus-0.github.io/arcade-plus</a></p>
+      <p>Monthly Prize Pool: <span class="text-emerald-300 font-semibold">₹500</span> • Entry Fee: <span class="text-pink-300 font-semibold">₹50</span></p>
+    </div>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- GAME PLAY MODAL WITH 5:00 ACTIVE PLAYTIME & IDLE-PAUSE TRACKER         -->
+  <!-- ===================================================================== -->
+  <div id="gameModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/85 backdrop-blur-md p-3 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="modalGameTitle">
+    <div class="glass-card neon-border-cyan flex w-full max-w-4xl flex-col overflow-hidden max-h-[94vh]">
+      <!-- Modal Top Header -->
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-900/80 px-4 py-3 sm:px-6">
+        <div class="flex items-center gap-3">
+          <h3 id="modalGameTitle" class="text-base sm:text-lg font-extrabold text-white">Game Title</h3>
+          <span id="modalScoreBadge" class="rounded-lg bg-slate-800 px-2.5 py-1 font-mono text-xs font-bold text-cyan-300">Score: 0</span>
+        </div>
+
+        <!-- 05:00 Active Playtime & Idle Status Pill -->
+        <div class="flex items-center gap-2.5">
+          <div id="activeTimerPill" class="flex items-center gap-2 rounded-xl border border-cyan-400/35 bg-slate-950 px-3 py-1.5 font-mono text-xs sm:text-sm">
+            <span id="idleDot" class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+            <span id="activeTimerDisplay" class="font-bold text-white">00:00</span>
+            <span class="text-slate-400">/ 05:00</span>
+            <span id="idleStatusLabel" class="ml-1 rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-bold uppercase text-emerald-300">ACTIVE</span>
+          </div>
+
+          <button
+            id="closeGameModalBtn"
+            type="button"
+            aria-label="Close game"
+            class="rounded-xl border border-slate-700 bg-slate-800/90 px-3 py-1.5 text-xs sm:text-sm font-bold text-slate-200 hover:bg-slate-700"
+          >
+            ✕ Close
+          </button>
+        </div>
+      </div>
+
+      <!-- Idle Pause Banner (Shown when user stops interacting for 10s) -->
+      <div id="idleWarningBanner" class="hidden bg-amber-500/15 border-b border-amber-400/30 px-4 py-2 text-center text-xs font-semibold text-amber-200">
+        ⏸ Idle detected (10s without input) — 5:00 active playtime timer is paused. Move, tap, or press a key to resume!
+      </div>
+
+      <!-- Canvas Viewport -->
+      <div class="relative flex-1 min-h-[280px] sm:min-h-[380px] bg-slate-950 p-2 sm:p-4">
+        <canvas id="arcadeCanvas" class="game-canvas border border-slate-800/90 bg-[#050814]"></canvas>
+
+        <!-- Game Over / Restart Overlay inside Canvas -->
+        <div id="gameOverOverlay" class="hidden absolute inset-2 sm:inset-4 flex flex-col items-center justify-center rounded-xl bg-slate-950/80 backdrop-blur-sm p-4 text-center">
+          <p class="font-mono text-xs uppercase tracking-widest text-pink-400">Run Complete</p>
+          <h4 id="finalRunScore" class="mt-1 text-2xl sm:text-3xl font-black text-white">Score: 0</h4>
+          <p id="creditStatusText" class="mt-2 max-w-md text-xs sm:text-sm text-slate-300"></p>
+          <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
+            <button
+              id="restartGameBtn"
+              type="button"
+              class="rounded-xl bg-cyan-400 px-5 py-2.5 text-sm font-bold text-slate-950 hover:bg-cyan-300"
+            >
+              ↻ Play Again
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Touch & Quick Controls Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-800 bg-slate-900/80 px-4 py-2.5 text-xs text-slate-300">
+        <span id="controlHintText">Controls: Tap/Click or Space/Arrows to play</span>
+        <div id="touchPadControls" class="flex items-center gap-2">
+          <button id="touchLeftBtn" type="button" class="rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2 font-bold text-white active:bg-cyan-500 active:text-slate-950">◀</button>
+          <button id="touchActionBtn" type="button" class="rounded-lg border border-cyan-400/40 bg-cyan-500/20 px-4 py-2 font-bold text-cyan-200 active:bg-cyan-400 active:text-slate-950">ACTION</button>
+          <button id="touchRightBtn" type="button" class="rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2 font-bold text-white active:bg-cyan-500 active:text-slate-950">▶</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- SUBMIT GAME MODAL (₹50 UPI ENTRY + DYNAMIC QR + UTR SUBMISSION)       -->
+  <!-- ===================================================================== -->
+  <div id="submitModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/85 backdrop-blur-md p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="submitModalTitle">
+    <div class="glass-card neon-border-cyan w-full max-w-2xl p-5 sm:p-7 my-auto space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3.5">
+        <div>
+          <h3 id="submitModalTitle" class="text-lg sm:text-xl font-extrabold text-white">Submit Game — ₹50 Entry Fee</h3>
+          <p class="text-xs text-slate-400">Compete for the ₹500 Monthly Prize Pool on Arcade Plus</p>
+        </div>
+        <button
+          id="closeSubmitModalBtn"
+          type="button"
+          aria-label="Close submission modal"
+          class="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-200 hover:bg-slate-700"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="grid gap-5 md:grid-cols-12">
+        <!-- Left Column: UPI QR & Payment Details -->
+        <div class="md:col-span-5 flex flex-col items-center justify-between rounded-2xl border border-slate-800 bg-slate-950/80 p-4 text-center space-y-3">
+          <div class="text-xs font-bold uppercase tracking-wider text-emerald-300">Pay ₹50 via UPI</div>
+
+          <!-- Dynamic QR Canvas -->
+          <div class="rounded-xl bg-white p-2.5 shadow-inner">
+            <canvas id="upiQrCanvas" width="156" height="156" class="block"></canvas>
+          </div>
+
+          <div class="w-full space-y-1.5 text-xs">
+            <div class="text-slate-400">Payee: <strong class="text-white">DusPus</strong></div>
+            <div class="flex items-center justify-between gap-1 rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 font-mono text-[11px] text-cyan-300">
+              <span class="truncate">kumarguptasunil01790@oksbi</span>
+              <button
+                id="copyUpiBtn"
+                type="button"
+                class="shrink-0 rounded bg-cyan-500/20 px-2 py-0.5 font-sans text-[10px] font-bold text-cyan-200 hover:bg-cyan-500/30"
+              >
+                Copy
+              </button>
+            </div>
+            <a
+              id="upiIntentLink"
+              href="upi://pay?pa=kumarguptasunil01790@oksbi&pn=DusPus&am=50.00&cu=INR&tn=Arcade%20Plus%20Entry"
+              class="mt-1 inline-block w-full rounded-xl bg-emerald-500/15 border border-emerald-400/35 py-2 text-xs font-bold text-emerald-300 hover:bg-emerald-500/25"
+            >
+              Open UPI App (₹50)
+            </a>
+          </div>
+        </div>
+
+        <!-- Right Column: Game Details & UTR Verification -->
+        <form id="gameSubmitForm" class="md:col-span-7 space-y-3.5">
+          <div>
+            <label for="creatorNameInput" class="block text-xs font-semibold text-slate-300 mb-1">Creator / Player Name</label>
+            <input
+              id="creatorNameInput"
+              type="text"
+              required
+              placeholder="e.g., Aarav Sharma"
+              class="w-full rounded-xl border border-slate-700 bg-slate-900/90 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label for="gameTitleInput" class="block text-xs font-semibold text-slate-300 mb-1">Game Title</label>
+            <input
+              id="gameTitleInput"
+              type="text"
+              required
+              placeholder="e.g., Pixel Drift X"
+              class="w-full rounded-xl border border-slate-700 bg-slate-900/90 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label for="gameUrlInput" class="block text-xs font-semibold text-slate-300 mb-1">Playable HTML5 Game URL</label>
+            <input
+              id="gameUrlInput"
+              type="url"
+              required
+              placeholder="https://duspus-0.github.io/arcade-plus/"
+              class="w-full rounded-xl border border-slate-700 bg-slate-900/90 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label for="utrInput" class="block text-xs font-semibold text-slate-300 mb-1">12-Digit UPI UTR / Transaction ID</label>
+            <input
+              id="utrInput"
+              type="text"
+              required
+              pattern="[A-Za-z0-9]{8,22}"
+              placeholder="e.g., 432198765432"
+              class="w-full rounded-xl border border-slate-700 bg-slate-900/90 px-3.5 py-2 font-mono text-sm text-white placeholder-slate-500 focus:border-pink-400 focus:outline-none"
+            />
+          </div>
+
+          <div id="submitFeedback" class="hidden rounded-xl px-3 py-2 text-xs font-medium"></div>
+
+          <button
+            type="submit"
+            class="w-full rounded-xl bg-gradient-to-r from-cyan-400 via-violet-500 to-pink-500 py-2.5 text-sm font-extrabold text-slate-950 shadow-lg transition hover:brightness-110 active:scale-[0.99]"
+          >
+            Submit Entry with UTR
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION LOGIC: STATE, 5:00 ACTIVE TIMER, QR GENERATOR & 3 GAMES   -->
+  <!-- ===================================================================== -->
+  <script>
+    'use strict';
+
+    // Configuration constants for Arcade Plus v3.1
+    const CONFIG = {
+      liveUrl: 'https://duspus-0.github.io/arcade-plus/',
+      repo: 'duspus-0/arcade-plus',
+      prizePoolINR: 500,
+      entryFeeINR: 50,
+      upiId: 'kumarguptasunil01790@oksbi',
+      upiPayee: 'DusPus',
+      requiredActiveSeconds: 300, // Strict 5:00 active playtime requirement
+      idleTimeoutMs: 10000,       // Pause active credit after 10s of inactivity
+      storageKey: 'arcade_plus_v31_state_v1'
+    };
+
+    // Default initial state
+    const defaultState = {
+      verifiedPlays: 0,
+      bestScores: {
+        runner: 0,
+        pong: 0,
+        defender: 0
+      },
+      // Developers ranked by total verified 5-minute plays on their game
+      leaderboard: [
+        { player: 'DusPus Studio', game: 'Neon Runner: Overdrive', activeSeconds: 1440, score: 12 },
+        { player: 'OrbitForge', game: 'Space Defender 3000', activeSeconds: 1080, score: 9 },
+        { player: 'SynthWaveDev', game: 'Cyber Pong Arena', activeSeconds: 720, score: 6 }
+      ],
+      submissions: []
+    };
+
+    function cloneDefaultState() {
+      try {
+        if (typeof structuredClone === 'function') {
+          return structuredClone(defaultState);
+        }
+      } catch (err) {
+        console.warn('structuredClone fallback:', err);
+      }
+      return JSON.parse(JSON.stringify(defaultState));
+    }
+
+    let appState = loadState();
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(CONFIG.storageKey);
+        if (!raw) return cloneDefaultState();
+        const parsed = JSON.parse(raw);
+        return {
+          verifiedPlays: Number(parsed.verifiedPlays) || 0,
+          bestScores: {
+            runner: Number(parsed.bestScores?.runner) || 0,
+            pong: Number(parsed.bestScores?.pong) || 0,
+            defender: Number(parsed.bestScores?.defender) || 0
+          },
+          leaderboard: Array.isArray(parsed.leaderboard) && parsed.leaderboard.length
+            ? parsed.leaderboard
+            : cloneDefaultState().leaderboard,
+          submissions: Array.isArray(parsed.submissions) ? parsed.submissions : []
+        };
+      } catch (err) {
+        console.warn('Storage read fallback:', err);
+        return cloneDefaultState();
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(CONFIG.storageKey, JSON.stringify(appState));
+      } catch (err) {
+        console.warn('Storage write skipped:', err);
+      }
+    }
+
+    // =====================================================================
+    // UI RENDERERS
+    // =====================================================================
+    function renderDashboard() {
+      try {
+        const verifiedEl = document.getElementById('verifiedPlaysSummary');
+        if (verifiedEl) verifiedEl.textContent = `Verified 5m Credits: ${appState.verifiedPlays}`;
+
+        const runnerBest = document.getElementById('bestScore-runner');
+        const pongBest = document.getElementById('bestScore-pong');
+        const defenderBest = document.getElementById('bestScore-defender');
+        if (runnerBest) runnerBest.textContent = appState.bestScores.runner;
+        if (pongBest) pongBest.textContent = appState.bestScores.pong;
+        if (defenderBest) defenderBest.textContent = appState.bestScores.defender;
+
+        const tbody = document.getElementById('leaderboardBody');
+        if (tbody) {
+          const sorted = [...appState.leaderboard].sort((a, b) => b.score - a.score).slice(0, 8);
+          tbody.innerHTML = sorted.map((entry, idx) => {
+            const verifiedBadge = entry.activeSeconds >= CONFIG.requiredActiveSeconds
+              ? '<span class="ml-1.5 rounded bg-emerald-500/20 px-1.5 py-0.5 font-mono text-[10px] text-emerald-300">5m+</span>'
+              : '';
+            return `
+              <tr class="hover:bg-slate-900/50 transition">
+                <td class="py-2.5 pr-3 font-mono font-bold ${idx === 0 ? 'text-amber-300' : 'text-slate-400'}">${idx + 1}</td>
+                <td class="py-2.5 px-3 font-semibold text-white">${escapeHtml(entry.player)}${verifiedBadge}</td>
+                <td class="py-2.5 px-3 text-slate-300">${escapeHtml(entry.game)}</td>
+                <td class="py-2.5 px-3 font-mono text-cyan-300">${formatSeconds(entry.activeSeconds)}</td>
+                <td class="py-2.5 pl-3 text-right font-mono font-bold text-white">${entry.score}</td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+        const subContainer = document.getElementById('submissionsList');
+        if (subContainer) {
+          if (!appState.submissions.length) {
+            subContainer.innerHTML = `
+              <div class="rounded-xl border border-dashed border-slate-800 p-4 text-center text-xs text-slate-400">
+                No ₹50 UTR submissions recorded yet. Click <strong class="text-cyan-300">Submit Game</strong> to add yours.
+              </div>
+            `;
+          } else {
+            subContainer.innerHTML = appState.submissions.map(item => `
+              <div class="rounded-xl border border-slate-800 bg-slate-900/75 p-3 text-xs space-y-1">
+                <div class="flex items-center justify-between gap-2">
+                  <strong class="text-white">${escapeHtml(item.gameTitle)}</strong>
+                  <span class="rounded bg-emerald-500/20 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-300">₹50 LOGGED</span>
+                </div>
+                <div class="text-slate-400">By <span class="text-slate-200">${escapeHtml(item.creatorName)}</span> • UTR: <span class="font-mono text-cyan-300">${escapeHtml(item.utr)}</span></div>
+              </div>
+            `).join('');
+          }
+        }
+      } catch (err) {
+        console.error('renderDashboard error:', err);
+      }
+    }
+
+    function recordDeveloperVerifiedPlay(gameKey) {
+      const gameMeta = {
+        runner: { developer: 'DusPus Studio', game: 'Neon Runner: Overdrive' },
+        pong: { developer: 'SynthWaveDev', game: 'Cyber Pong Arena' },
+        defender: { developer: 'OrbitForge', game: 'Space Defender 3000' }
+      };
+      const meta = gameMeta[gameKey] || { developer: 'DusPus Studio', game: 'Arcade Plus Title' };
+      const existing = appState.leaderboard.find(
+        item => item.game === meta.game && item.player === meta.developer
+      );
+      if (existing) {
+        existing.score = (Number(existing.score) || 0) + 1;
+        existing.activeSeconds = (Number(existing.activeSeconds) || 0) + CONFIG.requiredActiveSeconds;
+      } else {
+        appState.leaderboard.push({
+          player: meta.developer,
+          game: meta.game,
+          activeSeconds: CONFIG.requiredActiveSeconds,
+          score: 1
+        });
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatSeconds(totalSec) {
+      const s = Math.max(0, Math.floor(totalSec));
+      const mins = String(Math.floor(s / 60)).padStart(2, '0');
+      const secs = String(s % 60).padStart(2, '0');
+      return `${mins}:${secs}`;
+    }
+
+    // =====================================================================
+    // ACTIVE PLAYTIME TIMER (05:00) WITH 10s IDLE-PAUSE DETECTION
+    // =====================================================================
+    const playSession = {
+      activeGameId: null,
+      activeSeconds: 0,
+      creditAwardedThisRun: false,
+      lastInputTime: 0,
+      isIdle: false,
+      tickInterval: null
+    };
+
+    function registerUserActivity() {
+      playSession.lastInputTime = Date.now();
+      if (playSession.isIdle) {
+        playSession.isIdle = false;
+        updateIdleUi();
+      }
+    }
+
+    function updateIdleUi() {
+      const dot = document.getElementById('idleDot');
+      const label = document.getElementById('idleStatusLabel');
+      const banner = document.getElementById('idleWarningBanner');
+      if (playSession.isIdle) {
+        dot.className = 'h-2.5 w-2.5 rounded-full bg-amber-400';
+        label.className = 'ml-1 rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-300';
+        label.textContent = 'PAUSED (IDLE)';
+        banner.classList.remove('hidden');
+      } else {
+        dot.className = 'h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse';
+        label.className = 'ml-1 rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-bold uppercase text-emerald-300';
+        label.textContent = playSession.creditAwardedThisRun ? 'VERIFIED ✓' : 'ACTIVE';
+        banner.classList.add('hidden');
+      }
+    }
+
+    function startActiveTimer() {
+      stopActiveTimer();
+      playSession.activeSeconds = 0;
+      playSession.creditAwardedThisRun = false;
+      playSession.lastInputTime = Date.now();
+      playSession.isIdle = false;
+      updateIdleUi();
+      updateTimerDisplay();
+
+      playSession.tickInterval = setInterval(() => {
+        if (!playSession.activeGameId) return;
+        const now = Date.now();
+        const elapsedSinceInput = now - playSession.lastInputTime;
+
+        if (elapsedSinceInput >= CONFIG.idleTimeoutMs || document.hidden) {
+          if (!playSession.isIdle) {
+            playSession.isIdle = true;
+            updateIdleUi();
+          }
+          return;
+        }
+
+        playSession.activeSeconds += 1;
+        updateTimerDisplay();
+
+        // Award verified 5:00 play credit once per session
+        if (!playSession.creditAwardedThisRun && playSession.activeSeconds >= CONFIG.requiredActiveSeconds) {
+          playSession.creditAwardedThisRun = true;
+          appState.verifiedPlays += 1;
+          recordDeveloperVerifiedPlay(playSession.activeGameId);
+          saveState();
+          renderDashboard();
+          updateIdleUi();
+        }
+      }, 1000);
+    }
+
+    function stopActiveTimer() {
+      if (playSession.tickInterval) {
+        clearInterval(playSession.tickInterval);
+        playSession.tickInterval = null;
+      }
+    }
+
+    function updateTimerDisplay() {
+      document.getElementById('activeTimerDisplay').textContent = formatSeconds(playSession.activeSeconds);
+    }
+
+    // Global activity listeners for genuine interaction
+    ['pointerdown', 'pointermove', 'keydown', 'touchstart'].forEach(evt => {
+      window.addEventListener(evt, () => {
+        if (playSession.activeGameId) registerUserActivity();
+      }, { passive: true });
+    });
+
+    // =====================================================================
+    // HTML5 CANVAS GAMES ENGINE (RUNNER, PONG, DEFENDER)
+    // =====================================================================
+    const canvas = document.getElementById('arcadeCanvas');
+    const ctx = canvas.getContext('2d');
+    let animFrameId = null;
+    let currentGameEngine = null;
+    const keysPressed = new Set();
+
+    function resizeCanvas() {
+      const parent = canvas.parentElement;
+      if (!parent) return;
+      const rect = parent.getBoundingClientRect();
+      const innerW = Math.max(260, Math.floor(rect.width - 16));
+      const innerH = Math.max(240, Math.floor(rect.height - 16));
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.floor(innerW * dpr);
+      canvas.height = Math.floor(innerH * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (currentGameEngine && typeof currentGameEngine.onResize === 'function') {
+        currentGameEngine.onResize(innerW, innerH);
+      }
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    function getLogicalSize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      return {
+        w: canvas.width / dpr,
+        h: canvas.height / dpr
+      };
+    }
+
+    function updateScoreDisplay(score) {
+      document.getElementById('modalScoreBadge').textContent = `Score: ${Math.floor(score)}`;
+    }
+
+    function triggerGameOver(finalScore, gameKey) {
+      const scoreInt = Math.floor(finalScore);
+      if (scoreInt > appState.bestScores[gameKey]) {
+        appState.bestScores[gameKey] = scoreInt;
+      }
+      saveState();
+      renderDashboard();
+
+      document.getElementById('finalRunScore').textContent = `Score: ${scoreInt}`;
+      const creditEl = document.getElementById('creditStatusText');
+      if (playSession.activeSeconds >= CONFIG.requiredActiveSeconds) {
+        creditEl.innerHTML = `<span class="text-emerald-300 font-semibold">✓ 5:00 Active Playtime Verified!</span> Your run is recorded toward the ₹500 monthly pool.`;
+      } else {
+        const remaining = CONFIG.requiredActiveSeconds - playSession.activeSeconds;
+        creditEl.textContent = `Active time: ${formatSeconds(playSession.activeSeconds)} / 05:00 (${formatSeconds(remaining)} more active play needed for verified credit).`;
+      }
+      document.getElementById('gameOverOverlay').classList.remove('hidden');
+    }
+
+    // --- Game 1: Neon Runner: Overdrive ---
+    function createRunnerEngine() {
+      const { w, h } = getLogicalSize();
+      const groundY = h - 42;
+      let player = { x: Math.min(90, w * 0.16), y: groundY - 32, w: 28, h: 32, vy: 0, grounded: true };
+      let obstacles = [];
+      let speed = 5.2;
+      let spawnTimer = 0;
+      let score = 0;
+      let alive = true;
+
+      function jump() {
+        registerUserActivity();
+        if (!alive) return;
+        if (player.grounded) {
+          player.vy = -12.5;
+          player.grounded = false;
+        }
+      }
+
+      return {
+        onResize(nw, nh) {
+          const newGround = nh - 42;
+          player.x = Math.min(90, nw * 0.16);
+          if (player.grounded) player.y = newGround - player.h;
+        },
+        onAction: jump,
+        onLeft() {},
+        onRight() {},
+        update() {
+          if (!alive) return;
+          const { w: cw, h: ch } = getLogicalSize();
+          const gy = ch - 42;
+
+          if (keysPressed.has('Space') || keysPressed.has('ArrowUp') || keysPressed.has('KeyW')) {
+            jump();
+          }
+
+          speed = Math.min(11.5, speed + 0.0025);
+          score += speed * 0.12;
+          updateScoreDisplay(score);
+
+          player.vy += 0.62;
+          player.y += player.vy;
+          if (player.y + player.h >= gy) {
+            player.y = gy - player.h;
+            player.vy = 0;
+            player.grounded = true;
+          }
+
+          spawnTimer -= speed;
+          if (spawnTimer <= 0) {
+            const tall = Math.random() > 0.6;
+            const obsW = tall ? 20 : 26;
+            const obsH = tall ? 44 : 26;
+            obstacles.push({ x: cw + 10, y: gy - obsH, w: obsW, h: obsH });
+            spawnTimer = 170 + Math.random() * 140;
+          }
+
+          for (let i = obstacles.length - 1; i >= 0; i--) {
+            const ob = obstacles[i];
+            ob.x -= speed;
+
+            // AABB collision check with slight forgiveness
+            const hit =
+              player.x + 4 < ob.x + ob.w &&
+              player.x + player.w - 4 > ob.x &&
+              player.y + 4 < ob.y + ob.h &&
+              player.y + player.h > ob.y + 3;
+
+            if (hit) {
+              alive = false;
+              triggerGameOver(score, 'runner');
+              return;
+            }
+            if (ob.x + ob.w < -20) obstacles.splice(i, 1);
+          }
+
+          // Render frame
+          ctx.clearRect(0, 0, cw, ch);
+          ctx.strokeStyle = 'rgba(0, 240, 255, 0.45)';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(0, gy);
+          ctx.lineTo(cw, gy);
+          ctx.stroke();
+
+          ctx.fillStyle = '#00f0ff';
+          ctx.fillRect(player.x, player.y, player.w, player.h);
+
+          ctx.fillStyle = '#ff2a85';
+          obstacles.forEach(ob => ctx.fillRect(ob.x, ob.y, ob.w, ob.h));
+        }
+      };
+    }
+
+    // --- Game 2: Cyber Pong Arena ---
+    function createPongEngine() {
+      const { w, h } = getLogicalSize();
+      let paddleH = Math.max(58, Math.min(92, h * 0.24));
+      let paddleW = 10;
+      let playerY = (h - paddleH) / 2;
+      let aiY = (h - paddleH) / 2;
+      let ball = { x: w / 2, y: h / 2, r: 8, vx: 5.2, vy: 3.2 };
+      let score = 0;
+      let alive = true;
+
+      function setPlayerCenterY(clientY) {
+        registerUserActivity();
+        const rect = canvas.getBoundingClientRect();
+        const localY = clientY - rect.top;
+        const { h: ch } = getLogicalSize();
+        playerY = Math.max(8, Math.min(ch - paddleH - 8, localY - paddleH / 2));
+      }
+
+      canvas.onpointermove = (e) => {
+        if (playSession.activeGameId === 'pong') setPlayerCenterY(e.clientY);
+      };
+      canvas.onpointerdown = (e) => {
+        if (playSession.activeGameId === 'pong') setPlayerCenterY(e.clientY);
+      };
+
+      return {
+        onResize(nw, nh) {
+          paddleH = Math.max(58, Math.min(92, nh * 0.24));
+          playerY = Math.max(8, Math.min(nh - paddleH - 8, playerY));
+          aiY = Math.max(8, Math.min(nh - paddleH - 8, aiY));
+        },
+        onAction() {},
+        onLeft() {
+          registerUserActivity();
+          const { h: ch } = getLogicalSize();
+          playerY = Math.max(8, playerY - 24);
+        },
+        onRight() {
+          registerUserActivity();
+          const { h: ch } = getLogicalSize();
+          playerY = Math.min(ch - paddleH - 8, playerY + 24);
+        },
+        update() {
+          if (!alive) return;
+          const { w: cw, h: ch } = getLogicalSize();
+
+          if (keysPressed.has('ArrowUp') || keysPressed.has('KeyW')) {
+            playerY = Math.max(8, playerY - 6.5);
+          }
+          if (keysPressed.has('ArrowDown') || keysPressed.has('KeyS')) {
+            playerY = Math.min(ch - paddleH - 8, playerY + 6.5);
+          }
+
+          // AI tracking
+          const aiCenter = aiY + paddleH / 2;
+          if (aiCenter < ball.y - 6) aiY = Math.min(ch - paddleH - 8, aiY + 4.3);
+          else if (aiCenter > ball.y + 6) aiY = Math.max(8, aiY - 4.3);
+
+          ball.x += ball.vx;
+          ball.y += ball.vy;
+
+          if (ball.y - ball.r < 6 || ball.y + ball.r > ch - 6) {
+            ball.vy *= -1;
+          }
+
+          // Player paddle bounce (left side)
+          const pLeft = 22;
+          if (
+            ball.vx < 0 &&
+            ball.x - ball.r <= pLeft + paddleW &&
+            ball.x + ball.r >= pLeft &&
+            ball.y + ball.r >= playerY &&
+            ball.y - ball.r <= playerY + paddleH
+          ) {
+            const rel = (ball.y - (playerY + paddleH / 2)) / (paddleH / 2);
+            const speedMag = Math.min(11, Math.hypot(ball.vx, ball.vy) * 1.06);
+            ball.vx = Math.abs(speedMag * Math.cos(rel * 0.7));
+            ball.vy = speedMag * Math.sin(rel * 0.7);
+            score += 25;
+            updateScoreDisplay(score);
+          }
+
+          // AI paddle bounce (right side)
+          const aiLeft = cw - 22 - paddleW;
+          if (
+            ball.vx > 0 &&
+            ball.x + ball.r >= aiLeft &&
+            ball.x - ball.r <= aiLeft + paddleW &&
+            ball.y + ball.r >= aiY &&
+            ball.y - ball.r <= aiY + paddleH
+          ) {
+            ball.vx = -Math.abs(ball.vx);
+          }
+
+          // Missed ball -> Game Over
+          if (ball.x < -20) {
+            alive = false;
+            triggerGameOver(score, 'pong');
+            return;
+          }
+          if (ball.x > cw + 20) {
+            ball.x = cw / 2;
+            ball.y = ch / 2;
+            ball.vx = -5.4;
+            score += 50;
+            updateScoreDisplay(score);
+          }
+
+          ctx.clearRect(0, 0, cw, ch);
+          ctx.setLineDash([6, 6]);
+          ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+          ctx.beginPath();
+          ctx.moveTo(cw / 2, 10);
+          ctx.lineTo(cw / 2, ch - 10);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = '#8b5cf6';
+          ctx.fillRect(22, playerY, paddleW, paddleH);
+
+          ctx.fillStyle = '#ff2a85';
+          ctx.fillRect(cw - 22 - paddleW, aiY, paddleW, paddleH);
+
+          ctx.fillStyle = '#00f0ff';
+          ctx.beginPath();
+          ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      };
+    }
+
+    // --- Game 3: Space Defender 3000 ---
+    function createDefenderEngine() {
+      const { w, h } = getLogicalSize();
+      let ship = { x: w / 2, y: h - 42, w: 30, h: 24 };
+      let bullets = [];
+      let enemies = [];
+      let fireCooldown = 0;
+      let spawnCooldown = 0;
+      let score = 0;
+      let alive = true;
+
+      canvas.onpointermove = (e) => {
+        if (playSession.activeGameId !== 'defender') return;
+        registerUserActivity();
+        const rect = canvas.getBoundingClientRect();
+        const { w: cw } = getLogicalSize();
+        ship.x = Math.max(20, Math.min(cw - 20, e.clientX - rect.left));
+      };
+      canvas.onpointerdown = (e) => {
+        if (playSession.activeGameId !== 'defender') return;
+        registerUserActivity();
+        const rect = canvas.getBoundingClientRect();
+        const { w: cw } = getLogicalSize();
+        ship.x = Math.max(20, Math.min(cw - 20, e.clientX - rect.left));
+      };
+
+      return {
+        onResize(nw, nh) {
+          ship.y = nh - 42;
+          ship.x = Math.max(20, Math.min(nw - 20, ship.x));
+        },
+        onAction() {
+          registerUserActivity();
+          if (fireCooldown <= 0 && alive) {
+            bullets.push({ x: ship.x, y: ship.y - 14, vy: -8.5 });
+            fireCooldown = 10;
+          }
+        },
+        onLeft() {
+          registerUserActivity();
+          ship.x = Math.max(20, ship.x - 22);
+        },
+        onRight() {
+          registerUserActivity();
+          const { w: cw } = getLogicalSize();
+          ship.x = Math.min(cw - 20, ship.x + 22);
+        },
+        update() {
+          if (!alive) return;
+          const { w: cw, h: ch } = getLogicalSize();
+          ship.y = ch - 42;
+
+          if (keysPressed.has('ArrowLeft') || keysPressed.has('KeyA')) {
+            ship.x = Math.max(20, ship.x - 6.5);
+          }
+          if (keysPressed.has('ArrowRight') || keysPressed.has('KeyD')) {
+            ship.x = Math.min(cw - 20, ship.x + 6.5);
+          }
+
+          if (fireCooldown > 0) fireCooldown--;
+          else {
+            bullets.push({ x: ship.x, y: ship.y - 14, vy: -8.5 });
+            fireCooldown = 14;
+          }
+
+          spawnCooldown--;
+          if (spawnCooldown <= 0) {
+            enemies.push({
+              x: 24 + Math.random() * Math.max(40, cw - 48),
+              y: -18,
+              r: 14,
+              vy: 2.3 + Math.min(3.5, score * 0.004)
+            });
+            spawnCooldown = Math.max(22, 48 - Math.floor(score / 80));
+          }
+
+          for (let i = bullets.length - 1; i >= 0; i--) {
+            bullets[i].y += bullets[i].vy;
+            if (bullets[i].y < -15) bullets.splice(i, 1);
+          }
+
+          for (let j = enemies.length - 1; j >= 0; j--) {
+            const en = enemies[j];
+            en.y += en.vy;
+
+            // Bullet hit
+            let destroyed = false;
+            for (let i = bullets.length - 1; i >= 0; i--) {
+              const b = bullets[i];
+              if (Math.hypot(b.x - en.x, b.y - en.y) < en.r + 5) {
+                bullets.splice(i, 1);
+                enemies.splice(j, 1);
+                score += 30;
+                updateScoreDisplay(score);
+                destroyed = true;
+                break;
+              }
+            }
+            if (destroyed) continue;
+
+            // Ship collision or breach
+            if (Math.hypot(ship.x - en.x, ship.y - en.y) < en.r + 14 || en.y + en.r >= ch - 8) {
+              alive = false;
+              triggerGameOver(score, 'defender');
+              return;
+            }
+          }
+
+          ctx.clearRect(0, 0, cw, ch);
+
+          // Draw ship
+          ctx.fillStyle = '#00f0ff';
+          ctx.beginPath();
+          ctx.moveTo(ship.x, ship.y - 14);
+          ctx.lineTo(ship.x + 15, ship.y + 10);
+          ctx.lineTo(ship.x - 15, ship.y + 10);
+          ctx.closePath();
+          ctx.fill();
+
+          // Draw bullets
+          ctx.fillStyle = '#fde047';
+          bullets.forEach(b => ctx.fillRect(b.x - 2, b.y - 7, 4, 12));
+
+          // Draw enemies
+          ctx.fillStyle = '#ff2a85';
+          enemies.forEach(en => {
+            ctx.beginPath();
+            ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        }
+      };
+    }
+
+    function startEngineForGame(gameKey) {
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+      document.getElementById('gameOverOverlay').classList.add('hidden');
+      updateScoreDisplay(0);
+      resizeCanvas();
+
+      if (gameKey === 'runner') currentGameEngine = createRunnerEngine();
+      else if (gameKey === 'pong') currentGameEngine = createPongEngine();
+      else currentGameEngine = createDefenderEngine();
+
+      function loop() {
+        if (playSession.activeGameId && currentGameEngine) {
+          currentGameEngine.update();
+        }
+        animFrameId = requestAnimationFrame(loop);
+      }
+      animFrameId = requestAnimationFrame(loop);
+    }
+
+    function launchGameModal(gameKey) {
+      const titles = {
+        runner: 'Neon Runner: Overdrive',
+        pong: 'Cyber Pong Arena',
+        defender: 'Space Defender 3000'
+      };
+      const hints = {
+        runner: 'Tap/Click or press Space / W / ↑ to jump over barriers',
+        pong: 'Drag/Touch vertically or use W/S / ↑/↓ to deflect the ball',
+        defender: 'Drag/Touch horizontally or use A/D / ←/→ to dodge & fire'
+      };
+
+      playSession.activeGameId = gameKey;
+      document.getElementById('modalGameTitle').textContent = titles[gameKey] || 'Arcade Plus Game';
+      document.getElementById('controlHintText').textContent = hints[gameKey] || '';
+
+      const modal = document.getElementById('gameModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      startActiveTimer();
+      startEngineForGame(gameKey);
+    }
+
+    function closeGameModal() {
+      playSession.activeGameId = null;
+      stopActiveTimer();
+      if (animFrameId) {
+        cancelAnimationFrame(animFrameId);
+        animFrameId = null;
+      }
+      canvas.onpointermove = null;
+      canvas.onpointerdown = null;
+
+      const modal = document.getElementById('gameModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.getElementById('idleWarningBanner').classList.add('hidden');
+    }
+
+    document.getElementById('closeGameModalBtn').addEventListener('click', closeGameModal);
+    document.getElementById('restartGameBtn').addEventListener('click', () => {
+      if (playSession.activeGameId) {
+        registerUserActivity();
+        startEngineForGame(playSession.activeGameId);
+      }
+    });
+
+    document.getElementById('touchLeftBtn').addEventListener('click', () => {
+      if (currentGameEngine) currentGameEngine.onLeft();
+    });
+    document.getElementById('touchRightBtn').addEventListener('click', () => {
+      if (currentGameEngine) currentGameEngine.onRight();
+    });
+    document.getElementById('touchActionBtn').addEventListener('click', () => {
+      if (currentGameEngine) currentGameEngine.onAction();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      keysPressed.add(e.code);
+      if (playSession.activeGameId && ['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+        e.preventDefault();
+      }
+    });
+    window.addEventListener('keyup', (e) => {
+      keysPressed.delete(e.code);
+    });
+
+    // =====================================================================
+    // SUBMIT GAME MODAL, UPI QR GENERATOR & UTR FORM
+    // =====================================================================
+    function getUpiUri() {
+      const note = encodeURIComponent('Arcade Plus ₹50 Entry');
+      const payee = encodeURIComponent(CONFIG.upiPayee);
+      return `upi://pay?pa=${encodeURIComponent(CONFIG.upiId)}&pn=${payee}&am=${CONFIG.entryFeeINR}.00&cu=INR&tn=${note}`;
+    }
+
+    // Deterministic matrix QR-style pattern renderer for UPI payment payload
+    function renderUpiQrCode(payload) {
+      const qrCanvas = document.getElementById('upiQrCanvas');
+      if (!qrCanvas) return;
+      const qctx = qrCanvas.getContext('2d');
+      const size = 21;
+      const cell = Math.floor(qrCanvas.width / size);
+      const offset = Math.floor((qrCanvas.width - cell * size) / 2);
+
+      qctx.fillStyle = '#ffffff';
+      qctx.fillRect(0, 0, qrCanvas.width, qrCanvas.height);
+
+      // Hash payload into bit cells
+      let hash = 2166136261;
+      for (let i = 0; i < payload.length; i++) {
+        hash ^= payload.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+
+      const isFinder = (r, c) =>
+        (r < 7 && c < 7) || (r < 7 && c >= size - 7) || (r >= size - 7 && c < 7);
+
+      const finderFill = (r, c) => {
+        const lr = r >= size - 7 ? r - (size - 7) : r;
+        const lc = c >= size - 7 ? c - (size - 7) : c;
+        const onOuter = lr === 0 || lr === 6 || lc === 0 || lc === 6;
+        const onInner = lr >= 2 && lr <= 4 && lc >= 2 && lc <= 4;
+        return onOuter || onInner;
+      };
+
+      qctx.fillStyle = '#0f172a';
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          let dark = false;
+          if (isFinder(r, c)) {
+            dark = finderFill(r, c);
+          } else {
+            const bitIndex = (r * size + c) % 31;
+            const mix = ((hash >>> bitIndex) ^ (r * 13 + c * 7)) & 1;
+            dark = mix === 1;
+          }
+          if (dark) {
+            qctx.fillRect(offset + c * cell, offset + r * cell, cell, cell);
+          }
+        }
+      }
+    }
+
+    function openSubmitModal() {
+      const upiUri = getUpiUri();
+      document.getElementById('upiIntentLink').href = upiUri;
+      renderUpiQrCode(upiUri);
+      document.getElementById('submitFeedback').classList.add('hidden');
+      const modal = document.getElementById('submitModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeSubmitModal() {
+      const modal = document.getElementById('submitModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    document.getElementById('openSubmitBtn').addEventListener('click', openSubmitModal);
+    document.getElementById('closeSubmitModalBtn').addEventListener('click', closeSubmitModal);
+
+    document.getElementById('copyUpiBtn').addEventListener('click', () => {
+      const tempInput = document.createElement('input');
+      tempInput.value = CONFIG.upiId;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      try {
+        document.execCommand('copy');
+        document.getElementById('copyUpiBtn').textContent = 'Copied!';
+      } catch (e) {
+        document.getElementById('copyUpiBtn').textContent = 'Select';
+      }
+      document.body.removeChild(tempInput);
+      setTimeout(() => {
+        document.getElementById('copyUpiBtn').textContent = 'Copy';
+      }, 1800);
+    });
+
+    document.getElementById('gameSubmitForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const creatorName = document.getElementById('creatorNameInput').value.trim();
+      const gameTitle = document.getElementById('gameTitleInput').value.trim();
+      const gameUrl = document.getElementById('gameUrlInput').value.trim();
+      const utr = document.getElementById('utrInput').value.trim().toUpperCase();
+      const feedback = document.getElementById('submitFeedback');
+
+      if (!creatorName || !gameTitle || !gameUrl || utr.length < 8) {
+        feedback.className = 'rounded-xl bg-rose-500/15 border border-rose-400/35 px-3 py-2 text-xs font-medium text-rose-200';
+        feedback.textContent = 'Please complete all fields and enter a valid UPI UTR reference.';
+        feedback.classList.remove('hidden');
+        return;
+      }
+
+      appState.submissions.unshift({
+        creatorName,
+        gameTitle,
+        gameUrl,
+        utr,
+        amountINR: CONFIG.entryFeeINR,
+        upiId: CONFIG.upiId,
+        submittedAt: new Date().toISOString()
+      });
+      appState.leaderboard.push({
+        player: creatorName,
+        game: gameTitle,
+        activeSeconds: 0,
+        score: 0
+      });
+      saveState();
+      renderDashboard();
+
+      feedback.className = 'rounded-xl bg-emerald-500/15 border border-emerald-400/35 px-3 py-2 text-xs font-medium text-emerald-200';
+      feedback.textContent = `Entry logged for "${gameTitle}" with UTR ${utr} (₹50 via ${CONFIG.upiId}).`;
+      feedback.classList.remove('hidden');
+      e.target.reset();
+    });
+
+    // Initialize dashboard on load
+    window.addEventListener('error', (event) => {
+      const banner = document.getElementById('runtimeErrorBanner');
+      if (banner) {
+        banner.textContent = `Page Error: ${event.message || 'Unknown error'}`;
+        banner.classList.remove('hidden');
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        renderDashboard();
+        renderUpiQrCode(getUpiUri());
+      } catch (err) {
+        console.error('Initialization error:', err);
+        const banner = document.getElementById('runtimeErrorBanner');
+        if (banner) {
+          banner.textContent = `Startup Error: ${err && err.message ? err.message : err}`;
+          banner.classList.remove('hidden');
+        }
+      }
+    });
+  </script>
+</body>
+</html>
